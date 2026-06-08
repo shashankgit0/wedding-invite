@@ -117,6 +117,7 @@ function EventCard({ event, index }) {
           width: '100%', height: 280,
           backgroundImage: `url(${event.photo})`,
           backgroundSize: 'cover', backgroundPosition: 'center 10%',
+          filter: 'blur(1.5px)',
           position: 'relative',
         }}>
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, #fff 100%)' }} />
@@ -252,8 +253,8 @@ function ScrollScene({ onComplete }) {
   // Phase 3 (600–900): letter rises
   // Phase 4 (900–1200): zoom into invite
 
-  const envelopeRotateY = prog(0, 300) * 8; // subtle 3D tilt
-  const envelopeRotateZ = prog(0, 200) * -3;
+  const envelopeRotateY = prog(0, 300) * 180; // FULL FLIP on scroll
+  const envelopeRotateZ = prog(0, 200) * -2;
   const envelopeScale = 1 + prog(600, 900) * 0.08;
 
   const flapAngle = prog(300, 600) * 180;
@@ -408,27 +409,28 @@ function ScrollScene({ onComplete }) {
             <div style={{ position: 'absolute', bottom: 0, left: 0, width: 0, height: 0, borderLeft: '150px solid rgba(139,105,20,0.06)', borderTop: '100px solid transparent' }} />
             <div style={{ position: 'absolute', bottom: 0, right: 0, width: 0, height: 0, borderRight: '150px solid rgba(139,105,20,0.06)', borderTop: '100px solid transparent' }} />
 
-            {/* Names on envelope — clearly visible */}
+            {/* Names on envelope — NO seal blocking, fully visible */}
             <div style={{
               position: 'absolute', inset: 0,
               display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center',
-              paddingTop: 16,
+              paddingTop: 10,
               opacity: flapAngle > 90 ? Math.max(0, 1 - (flapAngle - 90) / 60) : 1,
+              zIndex: 2,
             }}>
-              <div style={{ fontSize: 9, letterSpacing: 3, color: '#A0855A', textTransform: 'uppercase', marginBottom: 6, fontFamily: 'Georgia, serif' }}>
+              <div style={{ fontSize: 9, letterSpacing: 3, color: '#A0855A', textTransform: 'uppercase', marginBottom: 8, fontFamily: 'Georgia, serif' }}>
                 #SrinithWedsPranathi
               </div>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 24, lineHeight: 1 }} className="shimmer-env2">
+              <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 28, lineHeight: 1 }} className="shimmer-env2">
                 Srinith
               </div>
-              <div style={{ fontSize: 11, color: '#A0855A', fontStyle: 'italic', margin: '3px 0', fontFamily: 'Georgia, serif', letterSpacing: 2 }}>
-                weds
+              <div style={{ fontSize: 12, color: '#A0855A', fontStyle: 'italic', margin: '4px 0', fontFamily: 'Georgia, serif', letterSpacing: 2 }}>
+                — weds —
               </div>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 24, lineHeight: 1 }} className="shimmer-env2">
+              <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 28, lineHeight: 1 }} className="shimmer-env2">
                 Pranathi
               </div>
-              <div style={{ fontSize: 9, color: '#C9A630', marginTop: 6, letterSpacing: 1, fontFamily: 'Georgia, serif' }}>
+              <div style={{ fontSize: 9, color: '#C9A630', marginTop: 8, letterSpacing: 1, fontFamily: 'Georgia, serif' }}>
                 August 2026 · Hyderabad
               </div>
             </div>
@@ -443,7 +445,6 @@ function ScrollScene({ onComplete }) {
               borderBottom: '1px solid rgba(139,105,20,0.25)',
               zIndex: 3,
             }}>
-              {/* Flap inner detail */}
               <div style={{
                 position: 'absolute', bottom: 15, left: '50%', transform: 'translateX(-50%)',
                 width: 40, height: 2, background: 'rgba(139,105,20,0.2)', borderRadius: 1,
@@ -451,20 +452,19 @@ function ScrollScene({ onComplete }) {
             </div>
           </div>
 
-          {/* WAX SEAL */}
+          {/* WAX SEAL — bottom right corner, not blocking names */}
           <div style={{
-            position: 'absolute', top: '44%', left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 60, height: 60, borderRadius: '50%',
+            position: 'absolute', bottom: 12, right: 12,
+            width: 44, height: 44, borderRadius: '50%',
             background: 'radial-gradient(circle at 35% 35%, #C41E3A, #6b0f0f)',
-            border: '2px solid rgba(201,160,32,0.9)',
+            border: '1.5px solid rgba(201,160,32,0.9)',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             zIndex: 4,
-            boxShadow: '0 4px 16px rgba(139,26,26,0.5)',
+            boxShadow: '0 3px 12px rgba(139,26,26,0.4)',
             opacity: sealOpacity,
           }}>
-            <div style={{ fontFamily: "'Playfair Display', serif", color: '#D4A017', fontSize: 13, fontWeight: 700, textAlign: 'center', lineHeight: 1.3 }}>
-              S<br/><span style={{ fontSize: 8 }}>✦</span><br/>P
+            <div style={{ fontFamily: "'Playfair Display', serif", color: '#D4A017', fontSize: 10, fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>
+              S✦P
             </div>
           </div>
 
@@ -550,13 +550,36 @@ function ScrollScene({ onComplete }) {
 
 export default function WeddingInvite() {
   const [showInvite, setShowInvite] = useState(false);
+  const [showEnvelope, setShowEnvelope] = useState(true);
   const [heroVisible, setHeroVisible] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
+  const mainRef = useRef();
 
   const handleComplete = () => {
+    setShowEnvelope(false);
     setShowInvite(true);
     setTimeout(() => setHeroVisible(true), 400);
   };
+
+  // When user scrolls back to very top of main page, show envelope again
+  useEffect(() => {
+    const el = mainRef.current;
+    if (!el) return;
+    const handleScroll = () => {
+      if (el.scrollTop === 0 && showInvite) {
+        setShowInvite(false);
+        setShowEnvelope(true);
+        setHeroVisible(false);
+        setTimeout(() => {
+          setShowInvite(true);
+          setShowEnvelope(false);
+          setTimeout(() => setHeroVisible(true), 400);
+        }, 1800);
+      }
+    };
+    el.addEventListener('scroll', handleScroll, { passive: true });
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, [showInvite]);
 
   const scrollTo = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -593,10 +616,10 @@ export default function WeddingInvite() {
         .nav-btn-m:hover { color: #6B4F00 !important; }
       `}</style>
 
-      {!showInvite && <ScrollScene onComplete={handleComplete} />}
+      {showEnvelope && <ScrollScene onComplete={handleComplete} />}
 
       {showInvite && (
-        <div style={{ animation: 'invite-m 0.9s ease forwards' }}>
+        <div ref={mainRef} style={{ overflowY: 'auto', height: '100vh' }}>
 
           {/* Petals */}
           {[...Array(5)].map((_, i) => (
@@ -673,13 +696,13 @@ export default function WeddingInvite() {
                 శుభ వివాహం
               </div>
 
-              <h1 style={{ fontSize: 'clamp(56px, 15vw, 80px)', fontFamily: "'Playfair Display', serif", fontWeight: 900, lineHeight: 1, marginBottom: 4 }}>
+              <h1 style={{ fontSize: 'clamp(56px, 15vw, 80px)', fontFamily: "'Playfair Display', serif", fontWeight: 900, lineHeight: 1, marginBottom: 0 }}>
                 <span className="shimmer-main-m">Srinith</span>
               </h1>
-              <div style={{ fontSize: 14, color: '#A0855A', fontStyle: 'italic', margin: '3px 0 5px', fontFamily: "'Cormorant Garamond', serif", letterSpacing: 3 }}>
+              <div style={{ fontSize: 14, color: '#A0855A', fontStyle: 'italic', margin: '2px 0 2px', fontFamily: "'Cormorant Garamond', serif", letterSpacing: 3 }}>
                 — weds —
               </div>
-              <h1 style={{ fontSize: 'clamp(56px, 15vw, 80px)', fontFamily: "'Playfair Display', serif", fontWeight: 900, lineHeight: 1, marginBottom: 22 }}>
+              <h1 style={{ fontSize: 'clamp(56px, 15vw, 80px)', fontFamily: "'Playfair Display', serif", fontWeight: 900, lineHeight: 1, marginBottom: 20 }}>
                 <span className="shimmer-main-m">Pranathi</span>
               </h1>
 
