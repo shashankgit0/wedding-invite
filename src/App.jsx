@@ -117,7 +117,7 @@ function EventCard({ event, index }) {
           width: '100%', height: 280,
           backgroundImage: `url(${event.photo})`,
           backgroundSize: 'cover', backgroundPosition: 'center 10%',
-          filter: 'blur(1.5px)',
+          filter: 'blur(0.8px)',
           position: 'relative',
         }}>
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, #fff 100%)' }} />
@@ -229,357 +229,175 @@ function RSVPForm() {
 function ScrollScene({ onComplete }) {
   const sceneRef = useRef();
   const [scrollY, setScrollY] = useState(0);
-  const TOTAL_SCROLL = 1200; // total scroll distance for the scene
+  const TOTAL_SCROLL = 1400;
 
   useEffect(() => {
     const el = sceneRef.current;
     if (!el) return;
-
     const handleScroll = () => {
       setScrollY(el.scrollTop);
-      if (el.scrollTop >= TOTAL_SCROLL - 50) {
-        onComplete();
-      }
+      if (el.scrollTop >= TOTAL_SCROLL - 50) onComplete();
     };
     el.addEventListener('scroll', handleScroll, { passive: true });
     return () => el.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Normalize progress 0–1 over a range
   const prog = (start, end) => Math.max(0, Math.min(1, (scrollY - start) / (end - start)));
 
-  // Phase 1 (0–300): envelope rotates/tilts
-  // Phase 2 (300–600): flap opens
-  // Phase 3 (600–900): letter rises
-  // Phase 4 (900–1200): zoom into invite
-
-  const envelopeRotateY = prog(0, 300) * 180; // FULL FLIP on scroll
-  const envelopeRotateZ = prog(0, 200) * -2;
-  const envelopeScale = 1 + prog(600, 900) * 0.08;
-
-  const flapAngle = prog(300, 600) * 180;
-
-  const letterY = -(prog(600, 900) * 140); // px upward
-  const letterOpacity = prog(580, 680);
-  const letterScale = 0.85 + prog(600, 900) * 0.15;
-
-  const sealOpacity = 1 - prog(280, 380);
-
-  const sceneOpacity = 1 - prog(950, 1100);
-  const sceneScale = 1 + prog(900, 1200) * 0.3;
+  // Phase 1 (0–400): full 180deg Y flip
+  // Phase 2 (400–700): flap opens on back face
+  // Phase 3 (700–1050): letter rises
+  // Phase 4 (1050–1400): zoom out to invite
+  const flipAngle   = prog(0, 400) * 180;
+  const flapAngle   = prog(400, 700) * 180;
+  const letterY     = -(prog(700, 1050) * 160);
+  const letterOpacity = prog(680, 780);
+  const letterScale = 0.82 + prog(700, 1050) * 0.18;
+  const sealOpacity = Math.max(0, 1 - prog(30, 180));
+  const sceneOpacity = 1 - prog(1050, 1300);
+  const sceneScale  = 1 + prog(1000, 1400) * 0.35;
 
   return (
-    <div ref={sceneRef} style={{
-      position: 'fixed', inset: 0, zIndex: 1000,
-      overflowY: 'scroll', overflowX: 'hidden',
-    }}>
+    <div ref={sceneRef} style={{ position: 'fixed', inset: 0, zIndex: 1000, overflowY: 'scroll', overflowX: 'hidden' }}>
       <style>{`
         @keyframes float-env2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-        @keyframes petal-sc {
-          0%{transform:translateY(-10px) rotate(0deg);opacity:0}
-          10%{opacity:0.8}
-          100%{transform:translateY(110vh) rotate(720deg);opacity:0}
-        }
-        @keyframes shimmer-sc {
-          0%{background-position:-200% center}
-          100%{background-position:200% center}
-        }
+        @keyframes petal-sc { 0%{transform:translateY(-10px) rotate(0deg);opacity:0} 10%{opacity:0.8} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+        @keyframes shimmer-sc { 0%{background-position:-200% center} 100%{background-position:200% center} }
         @keyframes hint-sc { 0%,100%{opacity:0.5;transform:translateY(0)} 50%{opacity:1;transform:translateY(-6px)} }
         @keyframes rotate-mandala { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        .shimmer-env2 {
-          background: linear-gradient(90deg, #6B4F00, #C9A630, #8B6914, #C9A630, #6B4F00);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          animation: shimmer-sc 3s linear infinite;
-        }
+        .shimmer-env2 { background: linear-gradient(90deg,#6B4F00,#C9A630,#8B6914,#C9A630,#6B4F00); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:shimmer-sc 3s linear infinite; }
       `}</style>
 
-      {/* Tall scroll content — creates scroll space */}
+      {/* Scroll space */}
       <div style={{ height: TOTAL_SCROLL + window.innerHeight, pointerEvents: 'none' }} />
 
-      {/* Sticky visual layer */}
-      <div style={{
-        position: 'fixed', inset: 0,
-        background: 'linear-gradient(160deg, #fdf8e8 0%, #f5e4a8 40%, #faecd0 100%)',
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        overflow: 'hidden',
-        opacity: sceneOpacity,
-        transform: `scale(${sceneScale})`,
-        transformOrigin: 'center center',
-        transition: 'opacity 0.1s, transform 0.1s',
-        pointerEvents: scrollY >= TOTAL_SCROLL - 50 ? 'none' : 'auto',
-      }}>
+      {/* Fixed visual */}
+      <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(160deg,#fdf8e8 0%,#f5e4a8 40%,#faecd0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', opacity: sceneOpacity, transform: `scale(${sceneScale})`, transformOrigin: 'center center', pointerEvents: scrollY >= TOTAL_SCROLL - 50 ? 'none' : 'auto' }}>
 
-        {/* Telugu kolam corners */}
-        <div style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
-          <KolamCorner size={140} opacity={0.15} />
-        </div>
-        <div style={{ position: 'absolute', top: 0, right: 0, pointerEvents: 'none' }}>
-          <KolamCorner size={140} opacity={0.15} flip />
-        </div>
-        <div style={{ position: 'absolute', bottom: 0, left: 0, pointerEvents: 'none', transform: 'scaleY(-1)' }}>
-          <KolamCorner size={140} opacity={0.15} />
-        </div>
-        <div style={{ position: 'absolute', bottom: 0, right: 0, pointerEvents: 'none', transform: 'scale(-1)' }}>
-          <KolamCorner size={140} opacity={0.15} />
-        </div>
+        {/* Kolam corners */}
+        <div style={{ position:'absolute', top:0, left:0, pointerEvents:'none' }}><KolamCorner size={140} opacity={0.15} /></div>
+        <div style={{ position:'absolute', top:0, right:0, pointerEvents:'none' }}><KolamCorner size={140} opacity={0.15} flip /></div>
+        <div style={{ position:'absolute', bottom:0, left:0, pointerEvents:'none', transform:'scaleY(-1)' }}><KolamCorner size={140} opacity={0.15} /></div>
+        <div style={{ position:'absolute', bottom:0, right:0, pointerEvents:'none', transform:'scale(-1)' }}><KolamCorner size={140} opacity={0.15} /></div>
 
-        {/* Rotating mandala background */}
-        <div style={{
-          position: 'absolute', top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          animation: 'rotate-mandala 60s linear infinite',
-          pointerEvents: 'none',
-        }}>
-          <MandalaBg />
-        </div>
+        {/* Mandala */}
+        <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', animation:'rotate-mandala 60s linear infinite', pointerEvents:'none' }}><MandalaBg /></div>
 
-        {/* Dot pattern */}
-        <div style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          backgroundImage: 'radial-gradient(circle, rgba(139,105,20,0.07) 1px, transparent 1px)',
-          backgroundSize: '28px 28px',
-        }} />
+        {/* Dot bg */}
+        <div style={{ position:'absolute', inset:0, pointerEvents:'none', backgroundImage:'radial-gradient(circle,rgba(139,105,20,0.07) 1px,transparent 1px)', backgroundSize:'28px 28px' }} />
 
-        {/* Border frame */}
-        <div style={{
-          position: 'absolute', inset: 16,
-          border: '1px solid rgba(139,105,20,0.12)',
-          borderRadius: 20, pointerEvents: 'none',
-        }} />
-        <div style={{
-          position: 'absolute', inset: 22,
-          border: '1px solid rgba(139,105,20,0.06)',
-          borderRadius: 16, pointerEvents: 'none',
-        }} />
+        {/* Frame */}
+        <div style={{ position:'absolute', inset:16, border:'1px solid rgba(139,105,20,0.12)', borderRadius:20, pointerEvents:'none' }} />
 
         {/* Petals */}
-        {[...Array(5)].map((_, i) => (
-          <div key={i} style={{
-            position: 'absolute', left: `${10 + i * 18}%`, top: '-20px',
-            fontSize: 13, pointerEvents: 'none',
-            animation: `petal-sc ${8 + i * 1.5}s linear infinite`,
-            animationDelay: `${i * 1.5}s`,
-          }}>🌸</div>
+        {[...Array(5)].map((_,i) => (
+          <div key={i} style={{ position:'absolute', left:`${10+i*18}%`, top:'-20px', fontSize:13, pointerEvents:'none', animation:`petal-sc ${8+i*1.5}s linear infinite`, animationDelay:`${i*1.5}s` }}>🌸</div>
         ))}
 
-        {/* Mango leaf border top */}
-        <div style={{
-          position: 'absolute', top: 30, left: '50%', transform: 'translateX(-50%)',
-          display: 'flex', gap: 6, alignItems: 'center', pointerEvents: 'none',
-          opacity: Math.max(0, 1 - prog(0, 200)),
-        }}>
-          {['🌿','🍃','🌸','🍃','🌸','🍃','🌿'].map((e, i) => (
-            <span key={i} style={{ fontSize: 12, opacity: 0.6 }}>{e}</span>
-          ))}
+        {/* Toran */}
+        <div style={{ position:'absolute', top:30, left:'50%', transform:'translateX(-50%)', display:'flex', gap:6, pointerEvents:'none', opacity:Math.max(0,1-prog(0,200)) }}>
+          {['🌿','🍃','🌸','🍃','🌸','🍃','🌿'].map((e,i) => <span key={i} style={{ fontSize:12, opacity:0.6 }}>{e}</span>)}
         </div>
 
-        {/* Top label */}
-        <div style={{
-          fontSize: 10, letterSpacing: 5, color: '#A0855A',
-          textTransform: 'uppercase', marginBottom: 24,
-          fontFamily: 'Georgia, serif',
-          opacity: Math.max(0, 1 - prog(0, 300)),
-          transform: `translateY(${-prog(0, 300) * 20}px)`,
-          transition: 'none',
-        }}>
+        {/* Label */}
+        <div style={{ fontSize:10, letterSpacing:5, color:'#A0855A', textTransform:'uppercase', marginBottom:24, fontFamily:'Georgia,serif', opacity:Math.max(0,1-prog(0,300)), transform:`translateY(${-prog(0,300)*20}px)` }}>
           You are cordially invited
         </div>
 
-        {/* ENVELOPE */}
-        <div style={{
-          position: 'relative',
-          width: 300, height: 200,
-          transform: `perspective(800px) rotateY(${envelopeRotateY}deg) rotateZ(${envelopeRotateZ}deg) scale(${envelopeScale})`,
-          transition: 'none',
-          animation: scrollY < 20 ? 'float-env2 3s ease-in-out infinite' : 'none',
-        }}>
-          {/* Envelope body */}
-          <div style={{
-            width: 300, height: 200,
-            background: 'linear-gradient(145deg, #fffbec, #f5e098)',
-            border: '1.5px solid rgba(139,105,20,0.45)',
-            borderRadius: 10, position: 'relative', overflow: 'hidden',
-            boxShadow: '0 12px 50px rgba(139,105,20,0.18), 0 2px 8px rgba(139,105,20,0.1)',
-          }}>
-            {/* Envelope decoration */}
-            <div style={{ position: 'absolute', inset: 5, border: '1px solid rgba(139,105,20,0.12)', borderRadius: 6, pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', bottom: 0, left: 0, width: 0, height: 0, borderLeft: '150px solid rgba(139,105,20,0.06)', borderTop: '100px solid transparent' }} />
-            <div style={{ position: 'absolute', bottom: 0, right: 0, width: 0, height: 0, borderRight: '150px solid rgba(139,105,20,0.06)', borderTop: '100px solid transparent' }} />
+        {/* ENVELOPE — 3D flip container */}
+        <div style={{ position:'relative', width:300, height:200, perspective:'900px', animation:scrollY < 20 ? 'float-env2 3s ease-in-out infinite' : 'none' }}>
 
-            {/* Names on envelope — NO seal blocking, fully visible */}
-            <div style={{
-              position: 'absolute', inset: 0,
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center',
-              paddingTop: 10,
-              opacity: flapAngle > 90 ? Math.max(0, 1 - (flapAngle - 90) / 60) : 1,
-              zIndex: 2,
-            }}>
-              <div style={{ fontSize: 9, letterSpacing: 3, color: '#A0855A', textTransform: 'uppercase', marginBottom: 8, fontFamily: 'Georgia, serif' }}>
-                #SrinithWedsPranathi
-              </div>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 28, lineHeight: 1 }} className="shimmer-env2">
-                Srinith
-              </div>
-              <div style={{ fontSize: 12, color: '#A0855A', fontStyle: 'italic', margin: '4px 0', fontFamily: 'Georgia, serif', letterSpacing: 2 }}>
-                — weds —
-              </div>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 28, lineHeight: 1 }} className="shimmer-env2">
-                Pranathi
-              </div>
-              <div style={{ fontSize: 9, color: '#C9A630', marginTop: 8, letterSpacing: 1, fontFamily: 'Georgia, serif' }}>
-                August 2026 · Hyderabad
-              </div>
+          {/* Flipper */}
+          <div style={{ position:'relative', width:'100%', height:'100%', transformStyle:'preserve-3d', transform:`rotateY(${flipAngle}deg)` }}>
+
+            {/* FRONT — names only, no flap */}
+            <div style={{ position:'absolute', inset:0, background:'linear-gradient(145deg,#fffbec,#f5e098)', border:'1.5px solid rgba(139,105,20,0.45)', borderRadius:10, boxShadow:'0 12px 50px rgba(139,105,20,0.18)', backfaceVisibility:'hidden', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
+              <div style={{ position:'absolute', inset:5, border:'1px solid rgba(139,105,20,0.1)', borderRadius:6 }} />
+              <div style={{ position:'absolute', bottom:0, left:0, width:0, height:0, borderLeft:'150px solid rgba(139,105,20,0.05)', borderTop:'100px solid transparent' }} />
+              <div style={{ position:'absolute', bottom:0, right:0, width:0, height:0, borderRight:'150px solid rgba(139,105,20,0.05)', borderTop:'100px solid transparent' }} />
+              <div style={{ fontSize:9, letterSpacing:3, color:'#A0855A', textTransform:'uppercase', marginBottom:10, fontFamily:'Georgia,serif' }}>#SrinithWedsPranathi</div>
+              <div style={{ fontFamily:"'Playfair Display',serif", fontWeight:900, fontSize:30, lineHeight:1 }} className="shimmer-env2">Srinith</div>
+              <div style={{ fontSize:12, color:'#A0855A', fontStyle:'italic', margin:'5px 0', fontFamily:'Georgia,serif', letterSpacing:2 }}>— weds —</div>
+              <div style={{ fontFamily:"'Playfair Display',serif", fontWeight:900, fontSize:30, lineHeight:1 }} className="shimmer-env2">Pranathi</div>
+              <div style={{ fontSize:9, color:'#C9A630', marginTop:10, letterSpacing:1, fontFamily:'Georgia,serif' }}>August 2026 · Hyderabad</div>
             </div>
 
-            {/* FLAP — opens as you scroll */}
-            <div style={{
-              position: 'absolute', top: 0, left: 0, right: 0, height: 120,
-              transformOrigin: 'top center',
-              transform: `perspective(600px) rotateX(${-flapAngle}deg)`,
-              clipPath: 'polygon(0 0, 100% 0, 50% 88%)',
-              background: 'linear-gradient(175deg, #e8c84a, #c9a020)',
-              borderBottom: '1px solid rgba(139,105,20,0.25)',
-              zIndex: 3,
-            }}>
-              <div style={{
-                position: 'absolute', bottom: 15, left: '50%', transform: 'translateX(-50%)',
-                width: 40, height: 2, background: 'rgba(139,105,20,0.2)', borderRadius: 1,
-              }} />
+            {/* BACK — no text, flap opens, letter rises */}
+            <div style={{ position:'absolute', inset:0, background:'linear-gradient(145deg,#fffbec,#f5e098)', border:'1.5px solid rgba(139,105,20,0.45)', borderRadius:10, boxShadow:'0 12px 50px rgba(139,105,20,0.18)', backfaceVisibility:'hidden', transform:'rotateY(180deg)', overflow:'hidden' }}>
+              <div style={{ position:'absolute', inset:5, border:'1px solid rgba(139,105,20,0.1)', borderRadius:6 }} />
+              <div style={{ position:'absolute', bottom:0, left:0, width:0, height:0, borderLeft:'150px solid rgba(139,105,20,0.06)', borderTop:'100px solid transparent' }} />
+              <div style={{ position:'absolute', bottom:0, right:0, width:0, height:0, borderRight:'150px solid rgba(139,105,20,0.06)', borderTop:'100px solid transparent' }} />
+
+              {/* Flap */}
+              <div style={{ position:'absolute', top:0, left:0, right:0, height:120, transformOrigin:'top center', transform:`perspective(600px) rotateX(${-flapAngle}deg)`, clipPath:'polygon(0 0,100% 0,50% 88%)', background:'linear-gradient(175deg,#e8c84a,#c9a020)', borderBottom:'1px solid rgba(139,105,20,0.25)', zIndex:3 }} />
+
+              {/* Letter */}
+              <div style={{ position:'absolute', bottom:8, left:18, right:18, background:'linear-gradient(180deg,#fffef8,#fdf5d8)', borderRadius:'6px 6px 4px 4px', padding:'14px 16px', boxShadow:'0 -6px 24px rgba(139,105,20,0.12)', transform:`translateY(${letterY}px) scale(${letterScale})`, opacity:letterOpacity, zIndex:2, border:'1px solid rgba(139,105,20,0.2)', textAlign:'center' }}>
+                <div style={{ position:'absolute', top:4, right:6, opacity:0.1 }}><KolamCorner size={40} opacity={1} /></div>
+                <div style={{ position:'absolute', top:4, left:6, opacity:0.1 }}><KolamCorner size={40} opacity={1} flip /></div>
+                <div style={{ fontSize:8, letterSpacing:3, color:'#A0855A', textTransform:'uppercase', marginBottom:6, fontFamily:'Georgia,serif' }}>With Joyful Hearts</div>
+                <div style={{ display:'flex', alignItems:'center', gap:6, justifyContent:'center', marginBottom:4 }}>
+                  <div style={{ height:1, width:18, background:'rgba(139,105,20,0.3)' }} /><span style={{ fontSize:10 }}>🌺</span><div style={{ height:1, width:18, background:'rgba(139,105,20,0.3)' }} />
+                </div>
+                <div style={{ fontFamily:"'Playfair Display',serif", color:'#2a1500', fontSize:17, fontWeight:700 }}>Srinith</div>
+                <div style={{ fontSize:10, fontStyle:'italic', color:'#8B6914', fontFamily:'Georgia,serif', margin:'2px 0' }}>weds</div>
+                <div style={{ fontFamily:"'Playfair Display',serif", color:'#2a1500', fontSize:17, fontWeight:700 }}>Pranathi</div>
+                <div style={{ fontSize:8, color:'#C9A630', marginTop:6, letterSpacing:1, fontFamily:'Georgia,serif' }}>August 2026 · Sri Vinoda Convention · Hyderabad</div>
+              </div>
             </div>
           </div>
 
-          {/* WAX SEAL — bottom right corner, not blocking names */}
-          <div style={{
-            position: 'absolute', bottom: 12, right: 12,
-            width: 44, height: 44, borderRadius: '50%',
-            background: 'radial-gradient(circle at 35% 35%, #C41E3A, #6b0f0f)',
-            border: '1.5px solid rgba(201,160,32,0.9)',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            zIndex: 4,
-            boxShadow: '0 3px 12px rgba(139,26,26,0.4)',
-            opacity: sealOpacity,
-          }}>
-            <div style={{ fontFamily: "'Playfair Display', serif", color: '#D4A017', fontSize: 10, fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>
-              S✦P
-            </div>
-          </div>
-
-          {/* LETTER rising from envelope */}
-          <div style={{
-            position: 'absolute', bottom: 8, left: 18, right: 18,
-            background: 'linear-gradient(180deg, #fffef8 0%, #fdf5d8 100%)',
-            borderRadius: '6px 6px 4px 4px',
-            padding: '14px 16px',
-            boxShadow: '0 -6px 24px rgba(139,105,20,0.12)',
-            transform: `translateY(${letterY}px) scale(${letterScale})`,
-            opacity: letterOpacity,
-            zIndex: 2,
-            border: '1px solid rgba(139,105,20,0.2)',
-            textAlign: 'center',
-          }}>
-            {/* Mini kolam on letter */}
-            <div style={{ position: 'absolute', top: 4, right: 6, opacity: 0.12 }}>
-              <KolamCorner size={40} opacity={1} />
-            </div>
-            <div style={{ position: 'absolute', top: 4, left: 6, opacity: 0.12 }}>
-              <KolamCorner size={40} opacity={1} flip />
-            </div>
-            <div style={{ fontSize: 8, letterSpacing: 3, color: '#A0855A', textTransform: 'uppercase', marginBottom: 6, fontFamily: 'Georgia, serif' }}>
-              With Joyful Hearts
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginBottom: 4 }}>
-              <div style={{ height: 1, width: 20, background: 'rgba(139,105,20,0.3)' }} />
-              <span style={{ fontSize: 10 }}>🌺</span>
-              <div style={{ height: 1, width: 20, background: 'rgba(139,105,20,0.3)' }} />
-            </div>
-            <div style={{ fontFamily: "'Playfair Display', serif", color: '#2a1500', fontSize: 17, fontWeight: 700, lineHeight: 1 }}>Srinith</div>
-            <div style={{ fontSize: 10, fontStyle: 'italic', color: '#8B6914', fontFamily: 'Georgia, serif', margin: '3px 0' }}>weds</div>
-            <div style={{ fontFamily: "'Playfair Display', serif", color: '#2a1500', fontSize: 17, fontWeight: 700, lineHeight: 1 }}>Pranathi</div>
-            <div style={{ fontSize: 8, color: '#C9A630', marginTop: 6, letterSpacing: 1, fontFamily: 'Georgia, serif' }}>
-              August 2026 · Sri Vinoda Convention · Hyderabad
-            </div>
+          {/* Wax seal — fades as flip starts */}
+          <div style={{ position:'absolute', bottom:14, right:14, width:44, height:44, borderRadius:'50%', background:'radial-gradient(circle at 35% 35%,#C41E3A,#6b0f0f)', border:'1.5px solid rgba(201,160,32,0.9)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:10, boxShadow:'0 3px 12px rgba(139,26,26,0.4)', opacity:sealOpacity, transform:`translateY(${(1-sealOpacity)*20}px)` }}>
+            <div style={{ fontFamily:"'Playfair Display',serif", color:'#D4A017', fontSize:10, fontWeight:700 }}>S✦P</div>
           </div>
         </div>
 
-        {/* Scroll hint */}
-        <div style={{
-          marginTop: 36,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
-          opacity: Math.max(0, 1 - prog(0, 200)),
-        }}>
-          <div style={{ animation: 'hint-sc 1.8s ease-in-out infinite', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-            <div style={{ fontSize: 18 }}>☝️</div>
-            <div style={{ width: 1, height: 20, background: 'linear-gradient(to bottom, #8B6914, transparent)' }} />
+        {/* Hint */}
+        <div style={{ marginTop:36, display:'flex', flexDirection:'column', alignItems:'center', gap:5, opacity:Math.max(0,1-prog(0,200)) }}>
+          <div style={{ animation:'hint-sc 1.8s ease-in-out infinite', display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
+            <div style={{ fontSize:18 }}>☝️</div>
+            <div style={{ width:1, height:20, background:'linear-gradient(to bottom,#8B6914,transparent)' }} />
           </div>
-          <div style={{ fontFamily: 'Georgia, serif', fontSize: 12, color: '#8B6914', letterSpacing: 3, textTransform: 'uppercase' }}>
-            Scroll to Open
-          </div>
-          <div style={{ fontFamily: 'Georgia, serif', fontSize: 11, color: '#C9A630', fontStyle: 'italic' }}>
-            శుభ వివాహం
-          </div>
+          <div style={{ fontFamily:'Georgia,serif', fontSize:12, color:'#8B6914', letterSpacing:3, textTransform:'uppercase' }}>Scroll to Open</div>
+          <div style={{ fontFamily:'Georgia,serif', fontSize:11, color:'#C9A630', fontStyle:'italic' }}>శుభ వివాహం</div>
         </div>
 
         {/* Progress bar */}
-        <div style={{
-          position: 'absolute', bottom: 24, left: '50%', transform: 'translateX(-50%)',
-          width: 80, height: 3, background: 'rgba(139,105,20,0.12)', borderRadius: 2,
-        }}>
-          <div style={{
-            width: `${Math.min(100, (scrollY / TOTAL_SCROLL) * 100)}%`,
-            height: '100%', background: '#8B6914', borderRadius: 2,
-            transition: 'width 0.05s',
-          }} />
+        <div style={{ position:'absolute', bottom:24, left:'50%', transform:'translateX(-50%)', width:80, height:3, background:'rgba(139,105,20,0.12)', borderRadius:2 }}>
+          <div style={{ width:`${Math.min(100,(scrollY/TOTAL_SCROLL)*100)}%`, height:'100%', background:'#8B6914', borderRadius:2 }} />
         </div>
-
-        {/* Telugu text bottom */}
-        <div style={{
-          position: 'absolute', bottom: 38,
-          fontFamily: 'Georgia, serif', fontSize: 10,
-          color: '#C9A630', letterSpacing: 2, opacity: 0.6,
-        }}>
-          శుభకార్యానికి స్వాగతం
-        </div>
+        <div style={{ position:'absolute', bottom:38, fontFamily:'Georgia,serif', fontSize:10, color:'#C9A630', letterSpacing:2, opacity:0.6 }}>శుభకార్యానికి స్వాగతం</div>
       </div>
     </div>
   );
 }
 
 export default function WeddingInvite() {
-  const [showInvite, setShowInvite] = useState(false);
-  const [showEnvelope, setShowEnvelope] = useState(true);
+  const [phase, setPhase] = useState('envelope'); // 'envelope' | 'invite'
   const [heroVisible, setHeroVisible] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
   const mainRef = useRef();
 
   const handleComplete = () => {
-    setShowEnvelope(false);
-    setShowInvite(true);
+    setPhase('invite');
     setTimeout(() => setHeroVisible(true), 400);
   };
 
-  // When user scrolls back to very top of main page, show envelope again
+  // Scroll back to top of main page → return to envelope
   useEffect(() => {
+    if (phase !== 'invite') return;
     const el = mainRef.current;
     if (!el) return;
     const handleScroll = () => {
-      if (el.scrollTop === 0 && showInvite) {
-        setShowInvite(false);
-        setShowEnvelope(true);
+      if (el.scrollTop === 0) {
+        setPhase('envelope');
         setHeroVisible(false);
-        setTimeout(() => {
-          setShowInvite(true);
-          setShowEnvelope(false);
-          setTimeout(() => setHeroVisible(true), 400);
-        }, 1800);
       }
     };
     el.addEventListener('scroll', handleScroll, { passive: true });
     return () => el.removeEventListener('scroll', handleScroll);
-  }, [showInvite]);
+  }, [phase]);
 
   const scrollTo = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -616,10 +434,10 @@ export default function WeddingInvite() {
         .nav-btn-m:hover { color: #6B4F00 !important; }
       `}</style>
 
-      {showEnvelope && <ScrollScene onComplete={handleComplete} />}
+      {phase === 'envelope' && <ScrollScene onComplete={handleComplete} />}
 
-      {showInvite && (
-        <div ref={mainRef} style={{ overflowY: 'auto', height: '100vh' }}>
+      {phase === 'invite' && (
+        <div ref={mainRef} style={{ overflowY: 'auto', height: '100vh', animation: 'invite-m 0.9s ease forwards' }}>
 
           {/* Petals */}
           {[...Array(5)].map((_, i) => (
