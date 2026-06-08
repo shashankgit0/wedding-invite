@@ -12,10 +12,9 @@ const events = [
     venue: "Taj Falaknuma Palace",
     city: "Hyderabad, Telangana",
     color: "#C9A96E",
-    accent: "#F5E6C8",
-    bg: "from-[#1a0a00] to-[#2d1500]",
     icon: "💍",
     emoji: "🌸",
+    photo: "/IMG_5770.PNG",
   },
   {
     id: "haldi",
@@ -28,10 +27,9 @@ const events = [
     venue: "ITC Kohenur",
     city: "Hyderabad, Telangana",
     color: "#E8B84B",
-    accent: "#FFF3C4",
-    bg: "from-[#1a1000] to-[#2d2000]",
     icon: "🌿",
     emoji: "🌻",
+    photo: null,
   },
   {
     id: "sangeet",
@@ -44,10 +42,9 @@ const events = [
     venue: "ITC Kohenur",
     city: "Hyderabad, Telangana",
     color: "#2D6A4F",
-    accent: "#B7E4C7",
-    bg: "from-[#001a0a] to-[#002d14]",
     icon: "🎶",
     emoji: "✨",
+    photo: null,
   },
   {
     id: "wedding",
@@ -55,15 +52,14 @@ const events = [
     telugu: "వివాహం",
     date: "August 26, 2025",
     day: "Tuesday",
-    time: "11:00 AM",
+    time: "1:30 PM",
     type: "Lunch",
     venue: "Novotel Hyderabad Convention Centre",
     city: "Hyderabad, Telangana",
     color: "#8B1A1A",
-    accent: "#FFD700",
-    bg: "from-[#1a0000] to-[#2d0000]",
     icon: "🔥",
     emoji: "🌺",
+    photo: null,
   },
   {
     id: "reception",
@@ -76,10 +72,9 @@ const events = [
     venue: "The Park Hyderabad",
     city: "Hyderabad, Telangana",
     color: "#7B3F6E",
-    accent: "#F2C4E8",
-    bg: "from-[#0d001a] to-[#1a0028]",
     icon: "🥂",
     emoji: "💫",
+    photo: null,
   },
 ];
 
@@ -94,18 +89,7 @@ const kolam = `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" opa
   <circle cx="100" cy="190" r="3" fill="currentColor"/>
   <circle cx="10" cy="100" r="3" fill="currentColor"/>
   <circle cx="190" cy="100" r="3" fill="currentColor"/>
-  <circle cx="29" cy="29" r="2" fill="currentColor"/>
-  <circle cx="171" cy="29" r="2" fill="currentColor"/>
-  <circle cx="29" cy="171" r="2" fill="currentColor"/>
-  <circle cx="171" cy="171" r="2" fill="currentColor"/>
 </svg>`;
-
-const mangoLeaf = (
-  <svg viewBox="0 0 40 80" style={{width:16, height:32, display:'inline-block'}}>
-    <path d="M20 5 Q35 20 35 45 Q35 70 20 75 Q5 70 5 45 Q5 20 20 5Z" fill="#2D6A4F" opacity="0.8"/>
-    <line x1="20" y1="5" x2="20" y2="75" stroke="#1a4030" strokeWidth="1.5"/>
-  </svg>
-);
 
 function CountdownTimer({ targetDate }) {
   const [time, setTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -125,20 +109,18 @@ function CountdownTimer({ targetDate }) {
     return () => clearInterval(t);
   }, [targetDate]);
   return (
-    <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
       {[['Days', time.days], ['Hours', time.hours], ['Mins', time.minutes], ['Secs', time.seconds]].map(([label, val]) => (
         <div key={label} style={{
           background: 'rgba(201,169,110,0.15)',
           border: '1px solid rgba(201,169,110,0.4)',
-          borderRadius: 8,
-          padding: '12px 18px',
-          minWidth: 64,
-          textAlign: 'center',
+          borderRadius: 8, padding: '10px 14px',
+          minWidth: 58, textAlign: 'center',
         }}>
-          <div style={{ fontSize: 28, fontFamily: "'Playfair Display', serif", color: '#C9A96E', fontWeight: 700 }}>
+          <div style={{ fontSize: 24, fontFamily: "'Playfair Display', serif", color: '#C9A96E', fontWeight: 700 }}>
             {String(val).padStart(2, '0')}
           </div>
-          <div style={{ fontSize: 11, color: '#a88a60', letterSpacing: 2, textTransform: 'uppercase' }}>{label}</div>
+          <div style={{ fontSize: 10, color: '#a88a60', letterSpacing: 2, textTransform: 'uppercase' }}>{label}</div>
         </div>
       ))}
     </div>
@@ -159,28 +141,49 @@ function EventCard({ event, index }) {
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateY(0)' : 'translateY(40px)',
       transition: `opacity 0.7s ease ${index * 0.1}s, transform 0.7s ease ${index * 0.1}s`,
-      background: 'rgba(255,255,255,0.03)',
+      background: event.photo
+        ? 'transparent'
+        : 'rgba(255,255,255,0.03)',
       border: `1px solid ${event.color}40`,
       borderRadius: 16,
       padding: '32px 28px',
       position: 'relative',
       overflow: 'hidden',
     }}>
+      {/* Photo background for engagement */}
+      {event.photo && (
+        <>
+          <div style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: `url(${event.photo})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center top',
+            filter: 'brightness(0.25) saturate(0.8)',
+            zIndex: 0,
+          }} />
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(135deg, rgba(13,5,0,0.7) 0%, rgba(201,169,110,0.15) 100%)',
+            zIndex: 1,
+          }} />
+        </>
+      )}
+
       {/* Background glow */}
       <div style={{
         position: 'absolute', top: -40, right: -40,
         width: 160, height: 160, borderRadius: '50%',
         background: `${event.color}15`, filter: 'blur(40px)',
-        pointerEvents: 'none',
+        pointerEvents: 'none', zIndex: 1,
       }} />
 
-      {/* Corner kolam decoration */}
+      {/* Corner kolam */}
       <div style={{
         position: 'absolute', top: 8, right: 8, width: 60, height: 60,
-        color: event.color, opacity: 0.3,
+        color: event.color, opacity: 0.3, zIndex: 2,
       }} dangerouslySetInnerHTML={{ __html: kolam }} />
 
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, position: 'relative' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, position: 'relative', zIndex: 2 }}>
         <div style={{
           fontSize: 36,
           background: `${event.color}20`,
@@ -192,7 +195,7 @@ function EventCard({ event, index }) {
         }}>{event.icon}</div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 13, color: event.color, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 2, fontFamily: 'serif' }}>
-            {event.emoji} {event.type}
+            {event.type}
           </div>
           <div style={{ fontSize: 26, fontFamily: "'Playfair Display', serif", color: '#F5E6C8', fontWeight: 700, lineHeight: 1.2 }}>
             {event.title}
@@ -206,6 +209,7 @@ function EventCard({ event, index }) {
       <div style={{
         marginTop: 20, display: 'grid', gridTemplateColumns: '1fr 1fr',
         gap: 12, borderTop: `1px solid ${event.color}25`, paddingTop: 20,
+        position: 'relative', zIndex: 2,
       }}>
         <div>
           <div style={{ fontSize: 11, color: '#7a6a55', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>Date</div>
@@ -229,9 +233,7 @@ function EventCard({ event, index }) {
 function RSVPForm() {
   const [form, setForm] = useState({ name: '', attending: '', events: [], message: '' });
   const [submitted, setSubmitted] = useState(false);
-  const handleSubmit = () => {
-    if (form.name && form.attending) setSubmitted(true);
-  };
+  const handleSubmit = () => { if (form.name && form.attending) setSubmitted(true); };
   const toggleEvent = (id) => {
     setForm(f => ({
       ...f,
@@ -261,10 +263,7 @@ function RSVPForm() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <input
-        style={inputStyle} placeholder="Your full name"
-        value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-      />
+      <input style={inputStyle} placeholder="Your full name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
       <div style={{ display: 'flex', gap: 12 }}>
         {['Joyfully Attending', 'Unable to Attend'].map(opt => (
           <button key={opt} onClick={() => setForm(f => ({ ...f, attending: opt }))} style={{
@@ -272,8 +271,7 @@ function RSVPForm() {
             background: form.attending === opt ? 'rgba(201,169,110,0.25)' : 'rgba(255,255,255,0.03)',
             border: `1px solid ${form.attending === opt ? '#C9A96E' : 'rgba(201,169,110,0.2)'}`,
             borderRadius: 8, color: form.attending === opt ? '#C9A96E' : '#7a6a55',
-            cursor: 'pointer', fontSize: 13, fontFamily: 'Georgia, serif',
-            transition: 'all 0.2s',
+            cursor: 'pointer', fontSize: 13, fontFamily: 'Georgia, serif', transition: 'all 0.2s',
           }}>{opt}</button>
         ))}
       </div>
@@ -287,8 +285,7 @@ function RSVPForm() {
               border: `1px solid ${form.events.includes(ev.id) ? ev.color : 'rgba(255,255,255,0.08)'}`,
               borderRadius: 8, padding: '10px 14px', cursor: 'pointer',
               color: form.events.includes(ev.id) ? ev.color : '#7a6a55',
-              fontFamily: 'Georgia, serif', fontSize: 13, textAlign: 'left',
-              transition: 'all 0.2s',
+              fontFamily: 'Georgia, serif', fontSize: 13, textAlign: 'left', transition: 'all 0.2s',
             }}>
               <span>{ev.icon}</span>
               <span>{ev.title}</span>
@@ -297,31 +294,224 @@ function RSVPForm() {
           ))}
         </div>
       </div>
-      <textarea
-        style={{ ...inputStyle, minHeight: 80, resize: 'vertical' }}
+      <textarea style={{ ...inputStyle, minHeight: 80, resize: 'vertical' }}
         placeholder="Leave a message for the couple... (optional)"
-        value={form.message}
-        onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
-      />
+        value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} />
       <button onClick={handleSubmit} style={{
         background: 'linear-gradient(135deg, #C9A96E, #8B6914)',
         border: 'none', borderRadius: 8, padding: '14px',
         color: '#1a0a00', fontFamily: "'Playfair Display', serif",
-        fontSize: 16, fontWeight: 700, cursor: 'pointer',
-        letterSpacing: 1, transition: 'opacity 0.2s',
+        fontSize: 16, fontWeight: 700, cursor: 'pointer', letterSpacing: 1,
       }}>Send RSVP ✨</button>
     </div>
   );
 }
 
+// ENVELOPE COMPONENT
+function EnvelopeIntro({ onOpen }) {
+  const [state, setState] = useState('idle'); // idle, opening, open
+
+  const handleTap = () => {
+    if (state !== 'idle') return;
+    setState('opening');
+    setTimeout(() => {
+      setState('open');
+      setTimeout(onOpen, 600);
+    }, 1200);
+  };
+
+  return (
+    <div onClick={handleTap} style={{
+      position: 'fixed', inset: 0, zIndex: 1000,
+      background: 'radial-gradient(ellipse at center, #1a0800 0%, #0d0500 100%)',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      cursor: 'pointer', overflow: 'hidden',
+    }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Cormorant+Garamond:ital@1&display=swap');
+        @keyframes float-env { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+        @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
+        @keyframes petal-fall {
+          0%{transform:translateY(-20px) rotate(0deg) translateX(0);opacity:0}
+          10%{opacity:1}
+          100%{transform:translateY(110vh) rotate(720deg) translateX(40px);opacity:0}
+        }
+        @keyframes flap-open {
+          0%{transform:rotateX(0deg)}
+          100%{transform:rotateX(-180deg)}
+        }
+        @keyframes letter-rise {
+          0%{transform:translateY(0);opacity:0}
+          100%{transform:translateY(-80px);opacity:1}
+        }
+        @keyframes fade-out {
+          0%{opacity:1}
+          100%{opacity:0}
+        }
+        @keyframes pulse-seal {
+          0%,100%{box-shadow:0 0 20px rgba(201,169,110,0.3)}
+          50%{box-shadow:0 0 40px rgba(201,169,110,0.6)}
+        }
+      `}</style>
+
+      {/* Falling petals */}
+      {[...Array(8)].map((_, i) => (
+        <div key={i} style={{
+          position: 'absolute',
+          left: `${10 + i * 11}%`,
+          top: '-30px',
+          fontSize: 16,
+          animation: `petal-fall ${6 + i * 1.5}s linear infinite`,
+          animationDelay: `${i * 0.8}s`,
+          pointerEvents: 'none',
+        }}>🌸</div>
+      ))}
+
+      {/* Ambient glow */}
+      <div style={{
+        position: 'absolute', top: '50%', left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 400, height: 400, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(201,169,110,0.08) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }} />
+
+      {/* Top text */}
+      <div style={{
+        fontFamily: 'Georgia, serif',
+        fontSize: 12, letterSpacing: 4,
+        color: '#C9A96E', textTransform: 'uppercase',
+        marginBottom: 32, opacity: state === 'open' ? 0 : 1,
+        transition: 'opacity 0.5s',
+      }}>
+        You are cordially invited
+      </div>
+
+      {/* Envelope */}
+      <div style={{
+        animation: state === 'idle' ? 'float-env 3s ease-in-out infinite' : 'none',
+        opacity: state === 'open' ? 0 : 1,
+        transition: 'opacity 0.4s',
+        position: 'relative',
+        width: 280, height: 200,
+      }}>
+        {/* Envelope body */}
+        <div style={{
+          width: 280, height: 200,
+          background: 'linear-gradient(145deg, #2a1500, #1a0a00)',
+          border: '1px solid rgba(201,169,110,0.4)',
+          borderRadius: 8,
+          position: 'relative',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(201,169,110,0.1)',
+          overflow: 'hidden',
+        }}>
+          {/* Inner letter peek */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 20, right: 20,
+            height: 120,
+            background: 'linear-gradient(180deg, #f5e6c8 0%, #e8d4a8 100%)',
+            borderRadius: 4,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            animation: state === 'opening' ? 'letter-rise 1.2s ease forwards' : 'none',
+            zIndex: 1,
+          }}>
+            <div style={{
+              textAlign: 'center',
+              fontFamily: "'Playfair Display', serif",
+              color: '#2a1500', fontSize: 13,
+            }}>
+              <div style={{ fontSize: 10, letterSpacing: 3, marginBottom: 4, opacity: 0.6 }}>WITH JOYFUL HEARTS</div>
+              <div style={{ fontWeight: 700, fontSize: 15 }}>Srinith</div>
+              <div style={{ fontSize: 10, fontStyle: 'italic', opacity: 0.7 }}>weds</div>
+              <div style={{ fontWeight: 700, fontSize: 15 }}>Pranathi</div>
+            </div>
+          </div>
+
+          {/* Envelope flap */}
+          <div style={{
+            position: 'absolute', top: 0, left: 0, right: 0,
+            height: 120,
+            background: 'linear-gradient(180deg, #3a1f00, #2a1500)',
+            borderBottom: '1px solid rgba(201,169,110,0.3)',
+            transformOrigin: 'top center',
+            animation: state === 'opening' ? 'flap-open 0.8s ease forwards' : 'none',
+            zIndex: 3,
+            clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
+          }} />
+
+          {/* Envelope lines */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0,
+            width: 0, height: 0,
+            borderLeft: '140px solid rgba(201,169,110,0.08)',
+            borderTop: '100px solid transparent',
+          }} />
+          <div style={{
+            position: 'absolute', bottom: 0, right: 0,
+            width: 0, height: 0,
+            borderRight: '140px solid rgba(201,169,110,0.08)',
+            borderTop: '100px solid transparent',
+          }} />
+        </div>
+
+        {/* Wax seal */}
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 56, height: 56, borderRadius: '50%',
+          background: 'radial-gradient(circle, #8B1A1A, #5a0f0f)',
+          border: '2px solid rgba(201,169,110,0.6)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 4,
+          animation: state === 'idle' ? 'pulse-seal 2s ease-in-out infinite' : 'none',
+          opacity: state === 'opening' ? 0 : 1,
+          transition: 'opacity 0.3s',
+        }}>
+          <div style={{
+            fontFamily: "'Playfair Display', serif",
+            color: '#C9A96E', fontSize: 14, fontWeight: 700,
+          }}>S&P</div>
+        </div>
+      </div>
+
+      {/* Tap hint */}
+      <div style={{
+        marginTop: 40,
+        fontFamily: 'Georgia, serif',
+        fontSize: 12, color: '#7a6a55',
+        letterSpacing: 3, textTransform: 'uppercase',
+        opacity: state === 'idle' ? 1 : 0,
+        transition: 'opacity 0.3s',
+        animation: 'float-env 2s ease-in-out infinite',
+      }}>
+        Tap to open
+      </div>
+
+      {/* Telugu text */}
+      <div style={{
+        marginTop: 12,
+        fontFamily: 'Georgia, serif',
+        fontSize: 13, color: '#5a4a35',
+        fontStyle: 'italic',
+        opacity: state === 'idle' ? 1 : 0,
+        transition: 'opacity 0.3s',
+      }}>
+        శుభ వివాహం
+      </div>
+    </div>
+  );
+}
+
 export default function WeddingInvite() {
+  const [showInvite, setShowInvite] = useState(false);
   const [heroVisible, setHeroVisible] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
 
-  useEffect(() => {
-    const t = setTimeout(() => setHeroVisible(true), 100);
-    return () => clearTimeout(t);
-  }, []);
+  const handleOpen = () => {
+    setShowInvite(true);
+    setTimeout(() => setHeroVisible(true), 200);
+  };
 
   const scrollTo = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -329,49 +519,26 @@ export default function WeddingInvite() {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#0d0500',
-      color: '#F5E6C8',
-      fontFamily: 'Georgia, serif',
-      overflowX: 'hidden',
-    }}>
-      {/* Google Fonts */}
+    <div style={{ minHeight: '100vh', background: '#0d0500', color: '#F5E6C8', fontFamily: 'Georgia, serif', overflowX: 'hidden' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&display=swap');
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #0d0500; }
         ::-webkit-scrollbar-thumb { background: #C9A96E40; border-radius: 2px; }
-
-        .nav-btn:hover { color: #C9A96E !important; }
-        .event-nav-btn:hover { background: rgba(201,169,110,0.15) !important; }
-
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-8px); }
-        }
-        @keyframes shimmer {
-          0% { background-position: -200% center; }
-          100% { background-position: 200% center; }
-        }
-        @keyframes rotate-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        @keyframes pulse-glow {
-          0%, 100% { opacity: 0.4; }
-          50% { opacity: 0.8; }
-        }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+        @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
+        @keyframes rotate-slow { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes pulse-glow { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
         @keyframes petal-fall {
-          0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
-          10% { opacity: 1; }
-          90% { opacity: 0.6; }
-          100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+          0%{transform:translateY(-20px) rotate(0deg);opacity:0}
+          10%{opacity:1} 90%{opacity:0.6}
+          100%{transform:translateY(100vh) rotate(360deg);opacity:0}
         }
-
+        @keyframes invite-reveal {
+          0%{opacity:0;transform:translateY(20px)}
+          100%{opacity:1;transform:translateY(0)}
+        }
         .shimmer-text {
           background: linear-gradient(90deg, #C9A96E, #FFD700, #F5E6C8, #C9A96E, #8B6914, #C9A96E);
           background-size: 200% auto;
@@ -379,290 +546,199 @@ export default function WeddingInvite() {
           -webkit-text-fill-color: transparent;
           animation: shimmer 4s linear infinite;
         }
-
-        .petal {
-          position: fixed;
-          pointer-events: none;
-          font-size: 18px;
-          animation: petal-fall linear infinite;
-          z-index: 0;
-        }
+        .petal { position:fixed; pointer-events:none; font-size:18px; animation:petal-fall linear infinite; z-index:0; }
+        .nav-btn:hover { color: #C9A96E !important; }
       `}</style>
 
-      {/* Floating petals */}
-      {[...Array(6)].map((_, i) => (
-        <div key={i} className="petal" style={{
-          left: `${10 + i * 15}%`,
-          animationDuration: `${8 + i * 2}s`,
-          animationDelay: `${i * 1.5}s`,
-          top: '-30px',
-        }}>🌸</div>
-      ))}
+      {/* Envelope screen */}
+      {!showInvite && <EnvelopeIntro onOpen={handleOpen} />}
 
-      {/* Fixed Navigation */}
-      <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        background: 'rgba(13,5,0,0.92)',
-        backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(201,169,110,0.2)',
-        padding: '0 20px',
-      }}>
-        <div style={{
-          maxWidth: 480, margin: '0 auto',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          height: 56,
-        }}>
-          <div style={{ fontSize: 13, color: '#C9A96E', fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif" }}>
-            S & P
-          </div>
-          <div style={{ display: 'flex', gap: 4 }}>
-            {[['home', 'Home'], ['events', 'Events'], ['rsvp', 'RSVP']].map(([id, label]) => (
-              <button key={id} className="nav-btn" onClick={() => scrollTo(id)} style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: activeSection === id ? '#C9A96E' : '#7a6a55',
-                fontSize: 12, padding: '6px 10px', letterSpacing: 1,
-                textTransform: 'uppercase', transition: 'color 0.2s',
-                fontFamily: 'Georgia, serif',
-              }}>{label}</button>
-            ))}
-          </div>
-        </div>
-      </nav>
+      {/* Main invite — revealed after envelope */}
+      {showInvite && (
+        <div style={{ animation: 'invite-reveal 0.8s ease forwards' }}>
 
-      {/* Hero Section */}
-      <section id="home" style={{
-        minHeight: '100vh',
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        position: 'relative',
-        padding: '80px 24px 40px',
-        overflow: 'hidden',
-      }}>
-        {/* Background mandala */}
-        <div style={{
-          position: 'absolute', top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: 500, height: 500, opacity: 0.06,
-          color: '#C9A96E',
-          animation: 'rotate-slow 60s linear infinite',
-        }} dangerouslySetInnerHTML={{ __html: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-          ${[90,80,70,60,50,40,30,20].map(r => `<circle cx="100" cy="100" r="${r}" fill="none" stroke="currentColor" stroke-width="0.5"/>`).join('')}
-          ${[0,30,60,90,120,150].map(a => `<line x1="100" y1="10" x2="100" y2="190" stroke="currentColor" stroke-width="0.3" transform="rotate(${a} 100 100)"/>`).join('')}
-          ${[0,45,90,135].map(a => `<path d="M100 15 Q115 50 100 85 Q85 50 100 15" fill="currentColor" opacity="0.5" transform="rotate(${a} 100 100)"/>`).join('')}
-        </svg>` }} />
-
-        {/* Radial glow */}
-        <div style={{
-          position: 'absolute', top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: 400, height: 400, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(201,169,110,0.08) 0%, transparent 70%)',
-          animation: 'pulse-glow 3s ease-in-out infinite',
-        }} />
-
-        <div style={{
-          position: 'relative', zIndex: 1,
-          textAlign: 'center', maxWidth: 420,
-          opacity: heroVisible ? 1 : 0,
-          transform: heroVisible ? 'translateY(0)' : 'translateY(30px)',
-          transition: 'opacity 1s ease, transform 1s ease',
-        }}>
-          {/* Mango leaf toran */}
-          <div style={{ fontSize: 20, marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-            {'🌿🍃🌸🍃🌿'.split('').map((c, i) => (
-              <span key={i} style={{ animation: `float ${2 + i * 0.2}s ease-in-out infinite`, animationDelay: `${i * 0.1}s`, display: 'inline-block' }}>{c}</span>
-            ))}
-          </div>
-
-          <div style={{ fontSize: 11, letterSpacing: 5, color: '#C9A96E', textTransform: 'uppercase', marginBottom: 16, fontFamily: 'Georgia, serif' }}>
-            With Joyful Hearts
-          </div>
-
-          <div style={{ fontSize: 13, color: '#7a6a55', fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif", marginBottom: 8 }}>
-            శుభ వివాహం
-          </div>
-
-          <h1 style={{
-            fontSize: 'clamp(52px, 14vw, 76px)',
-            fontFamily: "'Playfair Display', serif",
-            fontWeight: 900, lineHeight: 1,
-            marginBottom: 6,
-          }}>
-            <span className="shimmer-text">Srinith</span>
-          </h1>
-
-          <div style={{ fontSize: 22, color: '#C9A96E', fontStyle: 'italic', margin: '8px 0', fontFamily: "'Cormorant Garamond', serif" }}>
-            &amp; weds
-          </div>
-
-          <h1 style={{
-            fontSize: 'clamp(52px, 14vw, 76px)',
-            fontFamily: "'Playfair Display', serif",
-            fontWeight: 900, lineHeight: 1,
-            marginBottom: 24,
-          }}>
-            <span className="shimmer-text">Pranathi</span>
-          </h1>
-
-          {/* Divider */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center', marginBottom: 24 }}>
-            <div style={{ height: 1, width: 60, background: 'linear-gradient(to right, transparent, #C9A96E)' }} />
-            <span style={{ color: '#C9A96E', fontSize: 16 }}>🪷</span>
-            <div style={{ height: 1, width: 60, background: 'linear-gradient(to left, transparent, #C9A96E)' }} />
-          </div>
-
-          {/* Parents */}
-          <div style={{
-            background: 'rgba(201,169,110,0.06)',
-            border: '1px solid rgba(201,169,110,0.2)',
-            borderRadius: 12, padding: '20px 24px',
-            marginBottom: 28,
-          }}>
-            <div style={{ fontSize: 12, letterSpacing: 2, color: '#7a6a55', marginBottom: 12, textTransform: 'uppercase' }}>
-              Blessed by
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 8, alignItems: 'center' }}>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 12, color: '#C9A96E', marginBottom: 2 }}>Groom's Parents</div>
-                <div style={{ fontSize: 14, color: '#F5E6C8', lineHeight: 1.5, fontFamily: "'Cormorant Garamond', serif" }}>
-                  [Name] &<br />Smt. Vijaya
-                </div>
-              </div>
-              <div style={{ color: '#C9A96E', fontSize: 18, opacity: 0.5 }}>✦</div>
-              <div style={{ textAlign: 'left' }}>
-                <div style={{ fontSize: 12, color: '#C9A96E', marginBottom: 2 }}>Bride's Parents</div>
-                <div style={{ fontSize: 14, color: '#F5E6C8', lineHeight: 1.5, fontFamily: "'Cormorant Garamond', serif" }}>
-                  Sri. Sridhar Reddy &<br />Smt. Sunitha
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Wedding countdown */}
-          <div style={{ marginBottom: 28 }}>
-            <div style={{ fontSize: 11, letterSpacing: 3, color: '#7a6a55', textTransform: 'uppercase', marginBottom: 12 }}>
-              Wedding Countdown
-            </div>
-            <CountdownTimer targetDate="2025-08-26T11:00:00" />
-          </div>
-
-          <button onClick={() => scrollTo('events')} style={{
-            background: 'linear-gradient(135deg, #C9A96E20, #8B691420)',
-            border: '1px solid #C9A96E60',
-            borderRadius: 50, padding: '14px 32px',
-            color: '#C9A96E', cursor: 'pointer',
-            fontFamily: "'Playfair Display', serif",
-            fontSize: 15, letterSpacing: 1,
-            transition: 'all 0.3s',
-            animation: 'float 3s ease-in-out infinite',
-          }}>
-            View Celebrations ↓
-          </button>
-        </div>
-      </section>
-
-      {/* Events Section */}
-      <section id="events" style={{
-        maxWidth: 480, margin: '0 auto',
-        padding: '60px 20px',
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div style={{ fontSize: 11, letterSpacing: 4, color: '#7a6a55', textTransform: 'uppercase', marginBottom: 8 }}>
-            The Celebrations
-          </div>
-          <h2 style={{
-            fontSize: 36, fontFamily: "'Playfair Display', serif",
-            color: '#F5E6C8', fontWeight: 700,
-          }}>
-            <span className="shimmer-text">Five Sacred Events</span>
-          </h2>
-          <div style={{ fontSize: 13, color: '#7a6a55', marginTop: 8, fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif" }}>
-            వేడుకలకు ఆహ్వానం — You are warmly invited
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {events.map((event, i) => (
-            <EventCard key={event.id} event={event} index={i} />
+          {/* Floating petals */}
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="petal" style={{
+              left: `${10 + i * 15}%`,
+              animationDuration: `${8 + i * 2}s`,
+              animationDelay: `${i * 1.5}s`,
+              top: '-30px',
+            }}>🌸</div>
           ))}
-        </div>
 
-        {/* Venue note */}
-        <div style={{
-          marginTop: 32, textAlign: 'center',
-          background: 'rgba(201,169,110,0.05)',
-          border: '1px solid rgba(201,169,110,0.15)',
-          borderRadius: 12, padding: '20px',
-        }}>
-          <div style={{ fontSize: 20, marginBottom: 8 }}>📍</div>
-          <div style={{ fontSize: 12, color: '#7a6a55', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>All venues in</div>
-          <div style={{ fontSize: 18, color: '#C9A96E', fontFamily: "'Playfair Display', serif" }}>Hyderabad, Telangana</div>
-          <div style={{ fontSize: 12, color: '#7a6a55', marginTop: 4, fontStyle: 'italic' }}>City of Nizams & Pearls</div>
-        </div>
-      </section>
-
-      {/* Quote Section */}
-      <section style={{
-        padding: '40px 24px',
-        textAlign: 'center',
-        borderTop: '1px solid rgba(201,169,110,0.1)',
-        borderBottom: '1px solid rgba(201,169,110,0.1)',
-        position: 'relative', overflow: 'hidden',
-      }}>
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'radial-gradient(ellipse at center, rgba(201,169,110,0.05) 0%, transparent 70%)',
-        }} />
-        <div style={{ position: 'relative', maxWidth: 360, margin: '0 auto' }}>
-          <div style={{ fontSize: 32, color: '#C9A96E', opacity: 0.4, fontFamily: 'serif', lineHeight: 1 }}>"</div>
-          <p style={{
-            fontSize: 17, fontStyle: 'italic',
-            fontFamily: "'Cormorant Garamond', serif",
-            color: '#d4b896', lineHeight: 1.7, margin: '8px 0',
+          {/* Nav */}
+          <nav style={{
+            position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+            background: 'rgba(13,5,0,0.92)', backdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(201,169,110,0.2)', padding: '0 20px',
           }}>
-            A love that builds palaces out of promises,<br />
-            and turns every vow into a universe.
-          </p>
-          <div style={{ fontSize: 32, color: '#C9A96E', opacity: 0.4, fontFamily: 'serif', lineHeight: 1 }}>"</div>
-        </div>
-      </section>
+            <div style={{
+              maxWidth: 480, margin: '0 auto',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56,
+            }}>
+              <div style={{ fontSize: 13, color: '#C9A96E', fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif" }}>S & P</div>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {[['home', 'Home'], ['events', 'Events'], ['rsvp', 'RSVP']].map(([id, label]) => (
+                  <button key={id} className="nav-btn" onClick={() => scrollTo(id)} style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: activeSection === id ? '#C9A96E' : '#7a6a55',
+                    fontSize: 12, padding: '6px 10px', letterSpacing: 1,
+                    textTransform: 'uppercase', transition: 'color 0.2s', fontFamily: 'Georgia, serif',
+                  }}>{label}</button>
+                ))}
+              </div>
+            </div>
+          </nav>
 
-      {/* RSVP Section */}
-      <section id="rsvp" style={{
-        maxWidth: 480, margin: '0 auto',
-        padding: '60px 20px 80px',
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 11, letterSpacing: 4, color: '#7a6a55', textTransform: 'uppercase', marginBottom: 8 }}>
-            Join Us
-          </div>
-          <h2 style={{
-            fontSize: 36, fontFamily: "'Playfair Display', serif",
-            color: '#F5E6C8', fontWeight: 700, marginBottom: 8,
-          }}>RSVP</h2>
-          <p style={{ fontSize: 14, color: '#7a6a55', fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif" }}>
-            మీ హాజరు మాకు ఆశీర్వాదం
-          </p>
-          <p style={{ fontSize: 12, color: '#5a4a3a', marginTop: 4 }}>
-            Your presence blesses this union
-          </p>
-        </div>
-        <RSVPForm />
-      </section>
+          {/* Hero */}
+          <section id="home" style={{
+            minHeight: '100vh', display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            position: 'relative', padding: '80px 24px 40px', overflow: 'hidden',
+          }}>
+            {/* Mandala bg */}
+            <div style={{
+              position: 'absolute', top: '50%', left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 500, height: 500, opacity: 0.06, color: '#C9A96E',
+              animation: 'rotate-slow 60s linear infinite',
+            }} dangerouslySetInnerHTML={{ __html: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+              ${[90,80,70,60,50,40,30,20].map(r => `<circle cx="100" cy="100" r="${r}" fill="none" stroke="currentColor" stroke-width="0.5"/>`).join('')}
+              ${[0,30,60,90,120,150].map(a => `<line x1="100" y1="10" x2="100" y2="190" stroke="currentColor" stroke-width="0.3" transform="rotate(${a} 100 100)"/>`).join('')}
+            </svg>` }} />
 
-      {/* Footer */}
-      <footer style={{
-        textAlign: 'center', padding: '24px',
-        borderTop: '1px solid rgba(201,169,110,0.15)',
-      }}>
-        <div style={{ fontSize: 20, marginBottom: 8 }}>🌺 🌸 🌺</div>
-        <div style={{ fontSize: 13, color: '#5a4a3a', fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif" }}>
-          శుభం భవతు — May there be auspiciousness
+            <div style={{
+              position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 420,
+              opacity: heroVisible ? 1 : 0,
+              transform: heroVisible ? 'translateY(0)' : 'translateY(30px)',
+              transition: 'opacity 1s ease, transform 1s ease',
+            }}>
+              <div style={{ fontSize: 11, letterSpacing: 5, color: '#C9A96E', textTransform: 'uppercase', marginBottom: 16, fontFamily: 'Georgia, serif' }}>
+                With Joyful Hearts
+              </div>
+              <div style={{ fontSize: 13, color: '#7a6a55', fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif", marginBottom: 8 }}>
+                శుభ వివాహం
+              </div>
+
+              <h1 style={{ fontSize: 'clamp(52px, 14vw, 76px)', fontFamily: "'Playfair Display', serif", fontWeight: 900, lineHeight: 1, marginBottom: 4 }}>
+                <span className="shimmer-text">Srinith</span>
+              </h1>
+              <div style={{ fontSize: 18, color: '#C9A96E', fontStyle: 'italic', margin: '4px 0', fontFamily: "'Cormorant Garamond', serif" }}>
+                weds
+              </div>
+              <h1 style={{ fontSize: 'clamp(52px, 14vw, 76px)', fontFamily: "'Playfair Display', serif", fontWeight: 900, lineHeight: 1, marginBottom: 24 }}>
+                <span className="shimmer-text">Pranathi</span>
+              </h1>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center', marginBottom: 24 }}>
+                <div style={{ height: 1, width: 60, background: 'linear-gradient(to right, transparent, #C9A96E)' }} />
+                <span style={{ color: '#C9A96E', fontSize: 16 }}>🪷</span>
+                <div style={{ height: 1, width: 60, background: 'linear-gradient(to left, transparent, #C9A96E)' }} />
+              </div>
+
+              {/* Parents */}
+              <div style={{
+                background: 'rgba(201,169,110,0.06)', border: '1px solid rgba(201,169,110,0.2)',
+                borderRadius: 12, padding: '20px 24px', marginBottom: 28,
+              }}>
+                <div style={{ fontSize: 12, letterSpacing: 2, color: '#7a6a55', marginBottom: 12, textTransform: 'uppercase' }}>Blessed by</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 8, alignItems: 'center' }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: 12, color: '#C9A96E', marginBottom: 2 }}>Groom's Parents</div>
+                    <div style={{ fontSize: 14, color: '#F5E6C8', lineHeight: 1.5, fontFamily: "'Cormorant Garamond', serif" }}>
+                      [Name] &<br />Smt. Vijaya
+                    </div>
+                  </div>
+                  <div style={{ color: '#C9A96E', fontSize: 18, opacity: 0.5 }}>✦</div>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontSize: 12, color: '#C9A96E', marginBottom: 2 }}>Bride's Parents</div>
+                    <div style={{ fontSize: 14, color: '#F5E6C8', lineHeight: 1.5, fontFamily: "'Cormorant Garamond', serif" }}>
+                      Sri. Sridhar Reddy &<br />Smt. Sunitha
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Countdown */}
+              <div style={{ marginBottom: 28 }}>
+                <div style={{ fontSize: 11, letterSpacing: 3, color: '#7a6a55', textTransform: 'uppercase', marginBottom: 12 }}>
+                  Wedding Countdown
+                </div>
+                <CountdownTimer targetDate="2025-08-26T13:30:00" />
+              </div>
+
+              <button onClick={() => scrollTo('events')} style={{
+                background: 'linear-gradient(135deg, #C9A96E20, #8B691420)',
+                border: '1px solid #C9A96E60', borderRadius: 50, padding: '14px 32px',
+                color: '#C9A96E', cursor: 'pointer', fontFamily: "'Playfair Display', serif",
+                fontSize: 15, letterSpacing: 1, animation: 'float 3s ease-in-out infinite',
+              }}>
+                View Celebrations ↓
+              </button>
+            </div>
+          </section>
+
+          {/* Events */}
+          <section id="events" style={{ maxWidth: 480, margin: '0 auto', padding: '60px 20px' }}>
+            <div style={{ textAlign: 'center', marginBottom: 40 }}>
+              <div style={{ fontSize: 11, letterSpacing: 4, color: '#7a6a55', textTransform: 'uppercase', marginBottom: 8 }}>The Celebrations</div>
+              <h2 style={{ fontSize: 36, fontFamily: "'Playfair Display', serif", color: '#F5E6C8', fontWeight: 700 }}>
+                <span className="shimmer-text">Five Sacred Events</span>
+              </h2>
+              <div style={{ fontSize: 13, color: '#7a6a55', marginTop: 8, fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif" }}>
+                వేడుకలకు ఆహ్వానం — You are warmly invited
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              {events.map((event, i) => <EventCard key={event.id} event={event} index={i} />)}
+            </div>
+            <div style={{
+              marginTop: 32, textAlign: 'center',
+              background: 'rgba(201,169,110,0.05)', border: '1px solid rgba(201,169,110,0.15)',
+              borderRadius: 12, padding: '20px',
+            }}>
+              <div style={{ fontSize: 20, marginBottom: 8 }}>📍</div>
+              <div style={{ fontSize: 12, color: '#7a6a55', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>All venues in</div>
+              <div style={{ fontSize: 18, color: '#C9A96E', fontFamily: "'Playfair Display', serif" }}>Hyderabad, Telangana</div>
+              <div style={{ fontSize: 12, color: '#7a6a55', marginTop: 4, fontStyle: 'italic' }}>City of Nizams & Pearls</div>
+            </div>
+          </section>
+
+          {/* Quote */}
+          <section style={{ padding: '40px 24px', textAlign: 'center', borderTop: '1px solid rgba(201,169,110,0.1)', borderBottom: '1px solid rgba(201,169,110,0.1)' }}>
+            <div style={{ maxWidth: 360, margin: '0 auto' }}>
+              <div style={{ fontSize: 32, color: '#C9A96E', opacity: 0.4, fontFamily: 'serif', lineHeight: 1 }}>"</div>
+              <p style={{ fontSize: 17, fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif", color: '#d4b896', lineHeight: 1.7, margin: '8px 0' }}>
+                A love that builds palaces out of promises,<br />and turns every vow into a universe.
+              </p>
+              <div style={{ fontSize: 32, color: '#C9A96E', opacity: 0.4, fontFamily: 'serif', lineHeight: 1 }}>"</div>
+            </div>
+          </section>
+
+          {/* RSVP */}
+          <section id="rsvp" style={{ maxWidth: 480, margin: '0 auto', padding: '60px 20px 80px' }}>
+            <div style={{ textAlign: 'center', marginBottom: 32 }}>
+              <div style={{ fontSize: 11, letterSpacing: 4, color: '#7a6a55', textTransform: 'uppercase', marginBottom: 8 }}>Join Us</div>
+              <h2 style={{ fontSize: 36, fontFamily: "'Playfair Display', serif", color: '#F5E6C8', fontWeight: 700, marginBottom: 8 }}>RSVP</h2>
+              <p style={{ fontSize: 14, color: '#7a6a55', fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif" }}>మీ హాజరు మాకు ఆశీర్వాదం</p>
+              <p style={{ fontSize: 12, color: '#5a4a3a', marginTop: 4 }}>Your presence blesses this union</p>
+            </div>
+            <RSVPForm />
+          </section>
+
+          {/* Footer */}
+          <footer style={{ textAlign: 'center', padding: '24px', borderTop: '1px solid rgba(201,169,110,0.15)' }}>
+            <div style={{ fontSize: 20, marginBottom: 8 }}>🌺 🌸 🌺</div>
+            <div style={{ fontSize: 13, color: '#5a4a3a', fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif" }}>
+              శుభం భవతు — May there be auspiciousness
+            </div>
+            <div style={{ fontSize: 11, color: '#3a2a1a', marginTop: 8, letterSpacing: 1 }}>
+              SRINITH & PRANATHI · AUGUST 2025
+            </div>
+          </footer>
         </div>
-        <div style={{ fontSize: 11, color: '#3a2a1a', marginTop: 8, letterSpacing: 1 }}>
-          SRINITH & PRANATHI · AUGUST 2025
-        </div>
-      </footer>
+      )}
     </div>
   );
 }
