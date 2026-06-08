@@ -113,20 +113,25 @@ function EventCard({ event, index }) {
       boxShadow: '0 4px 24px rgba(139,105,20,0.08)',
     }}>
       {event.photo && (
-        <div style={{
-          width: '100%', height: 280,
-          backgroundImage: `url(${event.photo})`,
-          backgroundSize: 'cover', backgroundPosition: 'center 10%',
-          filter: 'blur(0.8px)',
-          position: 'relative',
-        }}>
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, #fff 100%)' }} />
+        <div style={{ width:'100%', height:280, position:'relative', overflow:'hidden' }}>
+          {/* Blurred photo layer */}
           <div style={{
-            position: 'absolute', top: 14, left: 14,
-            background: 'rgba(255,255,255,0.9)', borderRadius: 20, padding: '4px 12px',
-            fontSize: 11, color: event.color, letterSpacing: 2, textTransform: 'uppercase',
-            fontFamily: 'Georgia, serif', border: `1px solid ${event.color}30`,
-          }}>{event.type}</div>
+            position:'absolute', inset:0,
+            backgroundImage:`url(${event.photo})`,
+            backgroundSize:'cover', backgroundPosition:'center 10%',
+            filter:'blur(0.8px)',
+            transform:'scale(1.02)', // prevent blur edge artifacts
+          }} />
+          {/* Gradient overlay */}
+          <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom,transparent 50%,#fff 100%)' }} />
+          {/* Badge — NOT blurred, sits above */}
+          <div style={{
+            position:'absolute', top:14, left:14,
+            background:'rgba(255,255,255,0.9)', borderRadius:20, padding:'4px 12px',
+            fontSize:11, color:event.color, letterSpacing:2, textTransform:'uppercase',
+            fontFamily:'Georgia,serif', border:`1px solid ${event.color}30`,
+            zIndex:2,
+          }}>{event.type} · {event.type === 'Lunch' ? 'భోజనం' : 'విందు'}</div>
         </div>
       )}
       <div style={{ padding: '20px 20px 18px' }}>
@@ -137,7 +142,7 @@ function EventCard({ event, index }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}>{event.icon}</div>
           <div>
-            {!event.photo && <div style={{ fontSize: 10, color: event.color, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 2 }}>{event.type}</div>}
+            {!event.photo && <div style={{ fontSize: 10, color: event.color, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 2 }}>{event.type} · {event.type === 'Lunch' ? 'భోజనం' : 'విందు'}</div>}
             <div style={{ fontSize: 22, fontFamily: "'Playfair Display', serif", color: '#2a1500', fontWeight: 700, lineHeight: 1.1 }}>{event.title}</div>
             <div style={{ fontSize: 12, color: event.color, fontStyle: 'italic', marginTop: 2 }}>{event.telugu}</div>
           </div>
@@ -253,7 +258,7 @@ function ScrollScene({ onComplete }) {
   const letterY     = -(prog(700, 1050) * 160);
   const letterOpacity = prog(680, 780);
   const letterScale = 0.82 + prog(700, 1050) * 0.18;
-  const sealOpacity = Math.max(0, 1 - prog(30, 180));
+  const sealOpacity = Math.max(0, 1 - prog(400, 550)); // fades as flap starts opening
   const sceneOpacity = 1 - prog(1050, 1300);
   const sceneScale  = 1 + prog(1000, 1400) * 0.35;
 
@@ -347,9 +352,20 @@ function ScrollScene({ onComplete }) {
             </div>
           </div>
 
-          {/* Wax seal — fades as flip starts */}
-          <div style={{ position:'absolute', bottom:14, right:14, width:44, height:44, borderRadius:'50%', background:'radial-gradient(circle at 35% 35%,#C41E3A,#6b0f0f)', border:'1.5px solid rgba(201,160,32,0.9)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:10, boxShadow:'0 3px 12px rgba(139,26,26,0.4)', opacity:sealOpacity, transform:`translateY(${(1-sealOpacity)*20}px)` }}>
-            <div style={{ fontFamily:"'Playfair Display',serif", color:'#D4A017', fontSize:10, fontWeight:700 }}>S✦P</div>
+          {/* Wax seal — on BACK face only, drops off as flap opens */}
+          <div style={{
+            position:'absolute', top:'42%', left:'50%',
+            transform:`translate(-50%,-50%) rotateY(${flipAngle < 90 ? 0 : 180}deg)`,
+            width:52, height:52, borderRadius:'50%',
+            background:'radial-gradient(circle at 35% 35%,#C41E3A,#6b0f0f)',
+            border:'2px solid rgba(201,160,32,0.9)',
+            display:'flex', alignItems:'center', justifyContent:'center',
+            zIndex:10,
+            boxShadow:'0 4px 14px rgba(139,26,26,0.5)',
+            opacity: flipAngle < 90 ? 0 : sealOpacity,
+            pointerEvents:'none',
+          }}>
+            <div style={{ fontFamily:"'Playfair Display',serif", color:'#D4A017', fontSize:11, fontWeight:700, textAlign:'center', lineHeight:1.2 }}>S<br/><span style={{fontSize:7}}>✦</span><br/>P</div>
           </div>
         </div>
 
@@ -374,7 +390,7 @@ function ScrollScene({ onComplete }) {
 }
 
 export default function WeddingInvite() {
-  const [phase, setPhase] = useState('envelope'); // 'envelope' | 'invite'
+  const [phase, setPhase] = useState('envelope'); // 'envelope' | 'fading' | 'invite'
   const [heroVisible, setHeroVisible] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
   const mainRef = useRef();
@@ -384,15 +400,19 @@ export default function WeddingInvite() {
     setTimeout(() => setHeroVisible(true), 400);
   };
 
-  // Scroll back to top of main page → return to envelope
+  // Scroll back to top → smooth fade back to envelope
   useEffect(() => {
     if (phase !== 'invite') return;
     const el = mainRef.current;
     if (!el) return;
     const handleScroll = () => {
       if (el.scrollTop === 0) {
-        setPhase('envelope');
-        setHeroVisible(false);
+        // Fade out invite, then show envelope
+        setPhase('fading');
+        setTimeout(() => {
+          setPhase('envelope');
+          setHeroVisible(false);
+        }, 400);
       }
     };
     el.addEventListener('scroll', handleScroll, { passive: true });
@@ -423,6 +443,7 @@ export default function WeddingInvite() {
           10%{opacity:0.7} 100%{transform:translateY(105vh) rotate(720deg);opacity:0}
         }
         @keyframes invite-m { 0%{opacity:0;transform:translateY(12px)} 100%{opacity:1;transform:translateY(0)} }
+        @keyframes fade-out-invite { 0%{opacity:1} 100%{opacity:0} }
         .shimmer-main-m {
           background: linear-gradient(90deg, #6B4F00, #C9A630, #8B6914, #C9A630, #6B4F00);
           background-size: 200% auto;
@@ -436,8 +457,12 @@ export default function WeddingInvite() {
 
       {phase === 'envelope' && <ScrollScene onComplete={handleComplete} />}
 
-      {phase === 'invite' && (
-        <div ref={mainRef} style={{ overflowY: 'auto', height: '100vh', animation: 'invite-m 0.9s ease forwards' }}>
+      {(phase === 'invite' || phase === 'fading') && (
+        <div ref={mainRef} style={{
+          overflowY: phase === 'fading' ? 'hidden' : 'auto',
+          height: '100vh',
+          animation: phase === 'fading' ? 'fade-out-invite 0.4s ease forwards' : 'invite-m 0.9s ease forwards',
+        }}>
 
           {/* Petals */}
           {[...Array(5)].map((_, i) => (
