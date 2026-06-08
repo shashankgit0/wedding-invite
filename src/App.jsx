@@ -492,7 +492,7 @@ export default function WeddingInvite() {
           </h1>
 
           <div style={{ fontSize: 22, color: '#C9A96E', fontStyle: 'italic', margin: '8px 0', fontFamily: "'Cormorant Garamond', serif" }}>
-            &amp; forever
+            &amp; weds
           </div>
 
           <h1 style={{
