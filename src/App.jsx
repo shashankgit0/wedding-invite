@@ -5,7 +5,7 @@ const VENUE_URL = "https://maps.app.goo.gl/Xapm2UzTwXJ5vzgu5";
 
 const events = [
   { id: "engagement", title: "Engagement", telugu: "నిశ్చితార్థం", date: "June 25, 2026", day: "Thursday", time: "12:30 PM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#8B6914", icon: "💍", photo: "/eng.PNG", photoPos: "center 20%" },
-  { id: "haldi", title: "Haldi Ceremony", telugu: "పసుపు కార్యక్రమం", date: "August 23, 2026", day: "Sunday", time: "12:00 PM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#C97D00", icon: "🍯", photo: "/hal.PNG", photoPos: "center 55%" },
+  { id: "haldi", title: "Haldi Ceremony", telugu: "పసుపు కార్యక్రమం", date: "August 23, 2026", day: "Sunday", time: "12:00 PM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#C97D00", icon: "🍯", photo: "/hal.PNG", photoPos: "center 65%" },
   { id: "sangeet", title: "Sangeet Night", telugu: "సంగీత్ నైట్", date: "August 23, 2026", day: "Sunday", time: "7:00 PM", type: "Dinner", venue: VENUE, venueUrl: VENUE_URL, color: "#2D6A4F", icon: "🎶", photo: "/san.PNG", photoPos: "center 25%" },
   { id: "wedding", title: "Wedding", telugu: "వివాహం", date: "August 26, 2026", day: "Wednesday", time: "11:20 AM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#8B1A1A", icon: "💐", photo: "/wed.PNG", photoPos: "center 20%" },
   { id: "reception", title: "Reception", telugu: "రిసెప్షన్", date: "August 28, 2026", day: "Friday", time: "7:30 PM", type: "Dinner", venue: "Venue TBA", venueUrl: null, color: "#5B2D8E", icon: "🥂", photo: "/rec.PNG", photoPos: "center 25%" },
@@ -230,105 +230,96 @@ function RSVPForm() {
 }
 
 // THE SCROLL SCENE — Apple style
+
+// SCROLL-DRIVEN ENVELOPE SCENE
 function ScrollScene({ onComplete }) {
-  const [progress, setProgress] = useState(0); // 0 to 1
+  const [progress, setProgress] = useState(0);
   const progressRef = useRef(0);
-  const completedRef = useRef(false);
-  const animFrameRef = useRef(null);
   const targetRef = useRef(0);
+  const completedRef = useRef(false);
+  const rafRef = useRef(null);
   const touchStartY = useRef(null);
 
-  // Smoothly animate progress toward target (lerp)
+  // Smooth lerp animation loop
   useEffect(() => {
-    const animate = () => {
-      const current = progressRef.current;
-      const target = targetRef.current;
-      const diff = target - current;
-      if (Math.abs(diff) > 0.0005) {
-        const next = current + diff * 0.08;
-        progressRef.current = next;
-        setProgress(next);
+    const loop = () => {
+      const diff = targetRef.current - progressRef.current;
+      if (Math.abs(diff) > 0.0003) {
+        progressRef.current += diff * 0.07;
+        setProgress(progressRef.current);
       }
-      animFrameRef.current = requestAnimationFrame(animate);
+      rafRef.current = requestAnimationFrame(loop);
     };
-    animFrameRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animFrameRef.current);
+    rafRef.current = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
-  const addDelta = (delta) => {
+  const addDelta = (d) => {
     if (completedRef.current) return;
-    targetRef.current = Math.max(0, Math.min(1, targetRef.current + delta));
+    targetRef.current = Math.max(0, Math.min(1, targetRef.current + d));
     if (targetRef.current >= 0.98 && !completedRef.current) {
       completedRef.current = true;
-      setTimeout(onComplete, 300);
+      setTimeout(onComplete, 400);
     }
   };
 
   useEffect(() => {
-    // Mouse wheel + trackpad — window level so browser can't intercept
-    const handleWheel = (e) => {
-      e.preventDefault();
-      addDelta(e.deltaY / 800);
-    };
-
-    // Touch
-    const handleTouchStart = (e) => { touchStartY.current = e.touches[0].clientY; };
-    const handleTouchMove = (e) => {
+    const onWheel = (e) => { e.preventDefault(); addDelta(e.deltaY / 900); };
+    const onTouchStart = (e) => { touchStartY.current = e.touches[0].clientY; };
+    const onTouchMove = (e) => {
       if (touchStartY.current === null) return;
       const dy = touchStartY.current - e.touches[0].clientY;
       touchStartY.current = e.touches[0].clientY;
-      addDelta(dy / 400);
+      addDelta(dy / 450);
     };
-    const handleTouchEnd = () => { touchStartY.current = null; };
-
-    // Keyboard
-    const handleKey = (e) => {
-      if (['ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); addDelta(0.08); }
-      if (['ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); addDelta(-0.08); }
+    const onTouchEnd = () => { touchStartY.current = null; };
+    const onKey = (e) => {
+      if (['ArrowDown','PageDown',' '].includes(e.key)) { e.preventDefault(); addDelta(0.07); }
+      if (['ArrowUp','PageUp'].includes(e.key)) { e.preventDefault(); addDelta(-0.07); }
     };
-
-    window.addEventListener('wheel', handleWheel, { passive: false });
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchmove', handleTouchMove, { passive: true });
-    window.addEventListener('touchend', handleTouchEnd);
-    window.addEventListener('keydown', handleKey);
-
+    window.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onTouchEnd);
+    window.addEventListener('keydown', onKey);
     return () => {
-      window.removeEventListener('wheel', handleWheel);
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEnd);
-      window.removeEventListener('keydown', handleKey);
+      window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('keydown', onKey);
     };
   }, []);
 
-  // Map progress ranges to animation values
-  const p = (start, end) => Math.max(0, Math.min(1, (progress - start) / (end - start)));
+  const p = (s, e) => Math.max(0, Math.min(1, (progress - s) / (e - s)));
 
-  const flipAngle   = p(0, 0.35) * 180;
-  const flapAngle   = p(0.35, 0.65) * 180;
-  const letterY     = -(p(0.62, 0.88) * 160);
-  const letterOpacity = p(0.60, 0.72);
-  const letterScale = 0.82 + p(0.62, 0.88) * 0.18;
-  const sealOpacity = Math.max(0, 1 - p(0.35, 0.50));
-  const sceneOpacity = 1 - p(0.88, 1.0);
-  const sceneScale  = 1 + p(0.85, 1.0) * 0.3;
-
-  const prog = (start, end) => Math.max(0, Math.min(1, (scrollY - start) / (end - start)));
+  // Phases:
+  // 0.00–0.30: envelope flips 180deg (Y axis)
+  // 0.30–0.55: flap opens
+  // 0.55–0.75: folded card slides up out of envelope
+  // 0.75–0.95: card unfolds (like opening a greeting card)
+  // 0.95–1.00: transition to invite
+  const flipAngle    = p(0, 0.30) * 180;
+  const flapAngle    = p(0.30, 0.55) * 180;
+  const cardSlideY   = -(p(0.55, 0.75) * 180);
+  const cardSlideOp  = p(0.53, 0.65);
+  const unfoldAngle  = p(0.75, 0.95) * 180; // top half of card rotates back
+  const sealOp       = Math.max(0, 1 - p(0.30, 0.45));
+  const sceneOp      = 1 - p(0.93, 1.0);
+  const sceneScl     = 1 + p(0.90, 1.0) * 0.25;
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 1000 }}>
+    <div style={{ position:'fixed', inset:0, zIndex:1000 }}>
       <style>{`
-        @keyframes float-env2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-        @keyframes petal-sc { 0%{transform:translateY(-10px) rotate(0deg);opacity:0} 10%{opacity:0.8} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+        @keyframes float-sc { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        @keyframes petal-sc { 0%{transform:translateY(-10px) rotate(0deg);opacity:0} 10%{opacity:0.7} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
         @keyframes shimmer-sc { 0%{background-position:-200% center} 100%{background-position:200% center} }
-        @keyframes hint-sc { 0%,100%{opacity:0.5;transform:translateY(0)} 50%{opacity:1;transform:translateY(-6px)} }
-        @keyframes rotate-mandala { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        .shimmer-env2 { background: linear-gradient(90deg,#6B4F00,#C9A630,#8B6914,#C9A630,#6B4F00); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:shimmer-sc 3s linear infinite; }
+        @keyframes hint-sc { 0%,100%{opacity:0.4;transform:translateY(0)} 50%{opacity:1;transform:translateY(-6px)} }
+        @keyframes rot-m { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        .shim-env { background:linear-gradient(90deg,#6B4F00,#C9A630,#8B6914,#C9A630,#6B4F00); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:shimmer-sc 3s linear infinite; }
       `}</style>
 
-      {/* Fixed visual */}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg,#fdf8e8 0%,#f5e4a8 40%,#faecd0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', opacity: sceneOpacity, transform: `scale(${sceneScale})`, transformOrigin: 'center center' }}>
+      <div style={{ position:'absolute', inset:0, background:'linear-gradient(160deg,#fdf8e8 0%,#f5e4a8 40%,#faecd0 100%)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', overflow:'hidden', opacity:sceneOp, transform:`scale(${sceneScl})`, transformOrigin:'center center' }}>
 
         {/* Kolam corners */}
         <div style={{ position:'absolute', top:0, left:0, pointerEvents:'none' }}><KolamCorner size={140} opacity={0.15} /></div>
@@ -337,9 +328,9 @@ function ScrollScene({ onComplete }) {
         <div style={{ position:'absolute', bottom:0, right:0, pointerEvents:'none', transform:'scale(-1)' }}><KolamCorner size={140} opacity={0.15} /></div>
 
         {/* Mandala */}
-        <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', animation:'rotate-mandala 60s linear infinite', pointerEvents:'none' }}><MandalaBg /></div>
+        <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', animation:'rot-m 60s linear infinite', pointerEvents:'none', opacity:0.06 }}><MandalaBg /></div>
 
-        {/* Dot bg */}
+        {/* Dot pattern */}
         <div style={{ position:'absolute', inset:0, pointerEvents:'none', backgroundImage:'radial-gradient(circle,rgba(139,105,20,0.07) 1px,transparent 1px)', backgroundSize:'28px 28px' }} />
 
         {/* Frame */}
@@ -351,80 +342,101 @@ function ScrollScene({ onComplete }) {
         ))}
 
         {/* Toran */}
-        <div style={{ position:'absolute', top:30, left:'50%', transform:'translateX(-50%)', display:'flex', gap:6, pointerEvents:'none', opacity:Math.max(0,1-p(0,0.2)) }}>
-          {['🌿','🍃','🌸','🍃','🌸','🍃','🌿'].map((e,i) => <span key={i} style={{ fontSize:12, opacity:0.6 }}>{e}</span>)}
+        <div style={{ position:'absolute', top:28, left:'50%', transform:'translateX(-50%)', display:'flex', gap:5, pointerEvents:'none', opacity:Math.max(0,1-progress*4) }}>
+          {['🌿','🍃','🌸','🍃','🌸','🍃','🌿'].map((e,i)=><span key={i} style={{fontSize:12,opacity:0.6}}>{e}</span>)}
         </div>
 
-        {/* Label */}
-        <div style={{ fontSize:10, letterSpacing:5, color:'#A0855A', textTransform:'uppercase', marginBottom:24, fontFamily:'Georgia,serif', opacity:Math.max(0,1-p(0,0.3)), transform:`translateY(${-p(0,0.3)*20}px)` }}>
+        {/* Top label */}
+        <div style={{ fontSize:10, letterSpacing:5, color:'#A0855A', textTransform:'uppercase', marginBottom:22, fontFamily:'Georgia,serif', opacity:Math.max(0,1-progress*5), transform:`translateY(${-progress*5*16}px)` }}>
           You are cordially invited
         </div>
 
-        {/* ENVELOPE — 3D flip container */}
-        <div style={{ position:'relative', width:300, height:200, perspective:'900px', animation:scrollY < 20 ? 'float-env2 3s ease-in-out infinite' : 'none' }}>
+        {/* ENVELOPE — 3D flip */}
+        <div style={{ position:'relative', width:300, height:200, perspective:'900px', animation:progress < 0.02 ? 'float-sc 3s ease-in-out infinite' : 'none' }}>
 
           {/* Flipper */}
           <div style={{ position:'relative', width:'100%', height:'100%', transformStyle:'preserve-3d', transform:`rotateY(${flipAngle}deg)` }}>
 
-            {/* FRONT — names only, no flap */}
+            {/* FRONT — names only */}
             <div style={{ position:'absolute', inset:0, background:'linear-gradient(145deg,#fffbec,#f5e098)', border:'1.5px solid rgba(139,105,20,0.45)', borderRadius:10, boxShadow:'0 12px 50px rgba(139,105,20,0.18)', backfaceVisibility:'hidden', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
               <div style={{ position:'absolute', inset:5, border:'1px solid rgba(139,105,20,0.1)', borderRadius:6 }} />
               <div style={{ position:'absolute', bottom:0, left:0, width:0, height:0, borderLeft:'150px solid rgba(139,105,20,0.05)', borderTop:'100px solid transparent' }} />
               <div style={{ position:'absolute', bottom:0, right:0, width:0, height:0, borderRight:'150px solid rgba(139,105,20,0.05)', borderTop:'100px solid transparent' }} />
               <div style={{ fontSize:9, letterSpacing:3, color:'#A0855A', textTransform:'uppercase', marginBottom:10, fontFamily:'Georgia,serif' }}>#SrinithWedsPranathi</div>
-              <div style={{ fontFamily:"'Playfair Display',serif", fontWeight:900, fontSize:30, lineHeight:1 }} className="shimmer-env2">Srinith</div>
+              <div style={{ fontFamily:"'Playfair Display',serif", fontWeight:900, fontSize:30, lineHeight:1 }} className="shim-env">Srinith</div>
               <div style={{ fontSize:12, color:'#A0855A', fontStyle:'italic', margin:'5px 0', fontFamily:'Georgia,serif', letterSpacing:2 }}>— weds —</div>
-              <div style={{ fontFamily:"'Playfair Display',serif", fontWeight:900, fontSize:30, lineHeight:1 }} className="shimmer-env2">Pranathi</div>
+              <div style={{ fontFamily:"'Playfair Display',serif", fontWeight:900, fontSize:30, lineHeight:1 }} className="shim-env">Pranathi</div>
               <div style={{ fontSize:9, color:'#C9A630', marginTop:10, letterSpacing:1, fontFamily:'Georgia,serif' }}>August 2026 · Hyderabad</div>
             </div>
 
-            {/* BACK — no text, flap opens, letter rises */}
-            <div style={{ position:'absolute', inset:0, background:'linear-gradient(145deg,#fffbec,#f5e098)', border:'1.5px solid rgba(139,105,20,0.45)', borderRadius:10, boxShadow:'0 12px 50px rgba(139,105,20,0.18)', backfaceVisibility:'hidden', transform:'rotateY(180deg)', overflow:'hidden' }}>
+            {/* BACK — flap + card slot */}
+            <div style={{ position:'absolute', inset:0, background:'linear-gradient(145deg,#fffbec,#f5e098)', border:'1.5px solid rgba(139,105,20,0.45)', borderRadius:10, backfaceVisibility:'hidden', transform:'rotateY(180deg)', overflow:'hidden' }}>
               <div style={{ position:'absolute', inset:5, border:'1px solid rgba(139,105,20,0.1)', borderRadius:6 }} />
               <div style={{ position:'absolute', bottom:0, left:0, width:0, height:0, borderLeft:'150px solid rgba(139,105,20,0.06)', borderTop:'100px solid transparent' }} />
               <div style={{ position:'absolute', bottom:0, right:0, width:0, height:0, borderRight:'150px solid rgba(139,105,20,0.06)', borderTop:'100px solid transparent' }} />
-
               {/* Flap */}
-              <div style={{ position:'absolute', top:0, left:0, right:0, height:120, transformOrigin:'top center', transform:`perspective(600px) rotateX(${-flapAngle}deg)`, clipPath:'polygon(0 0,100% 0,50% 88%)', background:'linear-gradient(175deg,#e8c84a,#c9a020)', borderBottom:'1px solid rgba(139,105,20,0.25)', zIndex:3 }} />
-
-              {/* Letter */}
-              <div style={{ position:'absolute', bottom:8, left:18, right:18, background:'linear-gradient(180deg,#fffef8,#fdf5d8)', borderRadius:'6px 6px 4px 4px', padding:'14px 16px', boxShadow:'0 -6px 24px rgba(139,105,20,0.12)', transform:`translateY(${letterY}px) scale(${letterScale})`, opacity:letterOpacity, zIndex:2, border:'1px solid rgba(139,105,20,0.2)', textAlign:'center' }}>
-                <div style={{ position:'absolute', top:4, right:6, opacity:0.1 }}><KolamCorner size={40} opacity={1} /></div>
-                <div style={{ position:'absolute', top:4, left:6, opacity:0.1 }}><KolamCorner size={40} opacity={1} flip /></div>
-                <div style={{ fontSize:8, letterSpacing:3, color:'#A0855A', textTransform:'uppercase', marginBottom:6, fontFamily:'Georgia,serif' }}>With Joyful Hearts</div>
-                <div style={{ display:'flex', alignItems:'center', gap:6, justifyContent:'center', marginBottom:4 }}>
-                  <div style={{ height:1, width:18, background:'rgba(139,105,20,0.3)' }} /><span style={{ fontSize:10 }}>🌺</span><div style={{ height:1, width:18, background:'rgba(139,105,20,0.3)' }} />
-                </div>
-                <div style={{ fontFamily:"'Playfair Display',serif", color:'#2a1500', fontSize:17, fontWeight:700 }}>Srinith</div>
-                <div style={{ fontSize:10, fontStyle:'italic', color:'#8B6914', fontFamily:'Georgia,serif', margin:'2px 0' }}>weds</div>
-                <div style={{ fontFamily:"'Playfair Display',serif", color:'#2a1500', fontSize:17, fontWeight:700 }}>Pranathi</div>
-                <div style={{ fontSize:8, color:'#C9A630', marginTop:6, letterSpacing:1, fontFamily:'Georgia,serif' }}>August 2026 · Sri Vinoda Convention · Hyderabad</div>
-              </div>
+              <div style={{ position:'absolute', top:0, left:0, right:0, height:120, transformOrigin:'top center', transform:`perspective(600px) rotateX(${-flapAngle}deg)`, clipPath:'polygon(0 0,100% 0,50% 88%)', background:'linear-gradient(175deg,#e8c84a,#c9a020)', zIndex:3 }} />
             </div>
           </div>
 
-          {/* Wax seal — on BACK face only, drops off as flap opens */}
+          {/* Seal — front only, fades on flip */}
+          <div style={{ position:'absolute', bottom:14, right:14, width:48, height:48, borderRadius:'50%', background:'radial-gradient(circle at 35% 35%,#C41E3A,#6b0f0f)', border:'2px solid rgba(201,160,32,0.85)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:10, boxShadow:'0 4px 14px rgba(139,26,26,0.45)', opacity:sealOp, transform:`translateY(${(1-sealOp)*16}px)` }}>
+            <div style={{ fontFamily:"'Playfair Display',serif", color:'#D4A017', fontSize:11, fontWeight:700, textAlign:'center', lineHeight:1.2 }}>S<br/><span style={{fontSize:7}}>✦</span><br/>P</div>
+          </div>
+
+          {/* GREETING CARD rising from envelope */}
           <div style={{
-            position:'absolute', top:'42%', left:'50%',
-            transform:`translate(-50%,-50%) rotateY(${flipAngle < 90 ? 0 : 180}deg)`,
-            width:52, height:52, borderRadius:'50%',
-            background:'radial-gradient(circle at 35% 35%,#C41E3A,#6b0f0f)',
-            border:'2px solid rgba(201,160,32,0.9)',
-            display:'flex', alignItems:'center', justifyContent:'center',
-            zIndex:10,
-            boxShadow:'0 4px 14px rgba(139,26,26,0.5)',
-            opacity: flipAngle < 90 ? 0 : sealOpacity,
-            pointerEvents:'none',
+            position:'absolute', bottom:10, left:10, right:10,
+            height:180,
+            transform:`translateY(${cardSlideY}px)`,
+            opacity:cardSlideOp,
+            zIndex:5,
+            perspective:'700px',
           }}>
-            <div style={{ fontFamily:"'Playfair Display',serif", color:'#D4A017', fontSize:11, fontWeight:700, textAlign:'center', lineHeight:1.2, transform:'rotateY(180deg)' }}>S<br/><span style={{fontSize:7}}>✦</span><br/>P</div>
+            {/* Card body — split into top half (unfolds) and bottom half */}
+            <div style={{ position:'relative', width:'100%', height:'100%', transformStyle:'preserve-3d' }}>
+
+              {/* Bottom half of card — static */}
+              <div style={{ position:'absolute', bottom:0, left:0, right:0, height:'50%', background:'linear-gradient(180deg,#fdf8e8,#f5e6b0)', border:'1px solid rgba(139,105,20,0.3)', borderBottom:'1.5px solid rgba(139,105,20,0.4)', borderLeft:'1.5px solid rgba(139,105,20,0.4)', borderRight:'1.5px solid rgba(139,105,20,0.4)', borderRadius:'0 0 8px 8px', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
+                <div style={{ position:'absolute', inset:3, border:'1px solid rgba(139,105,20,0.12)', borderRadius:'0 0 6px 6px' }} />
+                <div style={{ textAlign:'center' }}>
+                  <div style={{ fontSize:18, fontFamily:"'Playfair Display',serif", color:'#2a1500', fontWeight:700 }} className="shim-env">Srinith</div>
+                  <div style={{ fontSize:10, color:'#A0855A', fontStyle:'italic', margin:'2px 0', fontFamily:'Georgia,serif' }}>weds</div>
+                  <div style={{ fontSize:18, fontFamily:"'Playfair Display',serif", color:'#2a1500', fontWeight:700 }} className="shim-env">Pranathi</div>
+                </div>
+              </div>
+
+              {/* Top half — unfolds upward like a greeting card */}
+              <div style={{
+                position:'absolute', top:0, left:0, right:0, height:'50%',
+                transformOrigin:'bottom center',
+                transform:`perspective(700px) rotateX(${-(180 - unfoldAngle)}deg)`,
+                background:'linear-gradient(180deg,#fffef5,#fdf8e0)',
+                border:'1.5px solid rgba(139,105,20,0.4)',
+                borderBottom:'none',
+                borderRadius:'8px 8px 0 0',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                backfaceVisibility:'hidden',
+                overflow:'hidden',
+              }}>
+                <div style={{ position:'absolute', inset:3, border:'1px solid rgba(139,105,20,0.12)', borderRadius:'6px 6px 0 0', borderBottom:'none' }} />
+                <div style={{ position:'absolute', top:4, right:5, opacity:0.1 }}><KolamCorner size={36} opacity={1} /></div>
+                <div style={{ position:'absolute', top:4, left:5, opacity:0.1 }}><KolamCorner size={36} opacity={1} flip /></div>
+                <div style={{ textAlign:'center' }}>
+                  <div style={{ fontSize:8, letterSpacing:3, color:'#A0855A', textTransform:'uppercase', marginBottom:4, fontFamily:'Georgia,serif' }}>Let's Celebrate</div>
+                  <div style={{ fontSize:13, color:'#8B6914', fontFamily:"'Playfair Display',serif", fontStyle:'italic' }}>శుభ వివాహం</div>
+                  <div style={{ fontSize:9, color:'#C9A630', marginTop:4, letterSpacing:1, fontFamily:'Georgia,serif' }}>August 2026 · Hyderabad</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Hint */}
-        <div style={{ marginTop:36, display:'flex', flexDirection:'column', alignItems:'center', gap:5, opacity:Math.max(0,1-p(0,0.2)) }}>
+        {/* Scroll hint */}
+        <div style={{ marginTop:34, display:'flex', flexDirection:'column', alignItems:'center', gap:5, opacity:Math.max(0,1-progress*6) }}>
           <div style={{ animation:'hint-sc 1.8s ease-in-out infinite', display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
             <div style={{ fontSize:18 }}>☝️</div>
-            <div style={{ width:1, height:20, background:'linear-gradient(to bottom,#8B6914,transparent)' }} />
+            <div style={{ width:1, height:18, background:'linear-gradient(to bottom,#8B6914,transparent)' }} />
           </div>
           <div style={{ fontFamily:'Georgia,serif', fontSize:12, color:'#8B6914', letterSpacing:3, textTransform:'uppercase' }}>Scroll to Open</div>
           <div style={{ fontFamily:'Georgia,serif', fontSize:11, color:'#C9A630', fontStyle:'italic' }}>శుభ వివాహం</div>
@@ -432,66 +444,32 @@ function ScrollScene({ onComplete }) {
 
         {/* Progress bar */}
         <div style={{ position:'absolute', bottom:24, left:'50%', transform:'translateX(-50%)', width:80, height:3, background:'rgba(139,105,20,0.12)', borderRadius:2 }}>
-          <div style={{ width:`${Math.min(100, progress * 100)}%`, height:'100%', background:'#8B6914', borderRadius:2 }} />
+          <div style={{ width:`${Math.min(100,progress*100)}%`, height:'100%', background:'#8B6914', borderRadius:2 }} />
         </div>
-        <div style={{ position:'absolute', bottom:38, fontFamily:'Georgia,serif', fontSize:10, color:'#C9A630', letterSpacing:2, opacity:0.6 }}>శుభకార్యానికి స్వాగతం</div>
+        <div style={{ position:'absolute', bottom:38, fontFamily:'Georgia,serif', fontSize:10, color:'#C9A630', letterSpacing:2, opacity:0.5 }}>శుభకార్యానికి స్వాగతం</div>
       </div>
     </div>
   );
 }
 
 export default function WeddingInvite() {
-  const [phase, setPhase] = useState('envelope'); // 'envelope' | 'fading' | 'invite'
+  const [phase, setPhase] = useState('envelope');
   const [heroVisible, setHeroVisible] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
   const mainRef = useRef();
 
   const handleComplete = () => {
     setPhase('invite');
-    setTimeout(() => setHeroVisible(true), 400);
+    setTimeout(() => setHeroVisible(true), 300);
   };
 
-  // Scroll back to top → smooth fade back to envelope
-  useEffect(() => {
-    if (phase !== 'invite') return;
-    const el = mainRef.current;
-    if (!el) return;
-    let hasScrolledDown = false;
-    let timer = null;
-
-    const handleScroll = () => {
-      if (el.scrollTop > 100) hasScrolledDown = true;
-      if (hasScrolledDown && el.scrollTop <= 0) {
-        clearTimeout(timer);
-        timer = setTimeout(() => {
-          setPhase('fading');
-          setTimeout(() => {
-            setPhase('envelope');
-            setHeroVisible(false);
-          }, 400);
-        }, 50);
-      }
-    };
-
-    // Also handle wheel going up past top
-    const handleWheel = (e) => {
-      if (el.scrollTop <= 0 && e.deltaY < 0 && hasScrolledDown) {
-        setPhase('fading');
-        setTimeout(() => {
-          setPhase('envelope');
-          setHeroVisible(false);
-        }, 400);
-      }
-    };
-
-    el.addEventListener('scroll', handleScroll, { passive: true });
-    el.addEventListener('wheel', handleWheel, { passive: true });
-    return () => {
-      el.removeEventListener('scroll', handleScroll);
-      el.removeEventListener('wheel', handleWheel);
-      clearTimeout(timer);
-    };
-  }, [phase]);
+  const handleBackToEnvelope = () => {
+    setPhase('fading');
+    setTimeout(() => {
+      setPhase('envelope');
+      setHeroVisible(false);
+    }, 350);
+  };
 
   const scrollTo = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -499,229 +477,150 @@ export default function WeddingInvite() {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(180deg, #fdf8e8 0%, #f5e4a8 25%, #faecd0 60%, #fdf8e8 100%)',
-      color: '#2a1500', fontFamily: 'Georgia, serif', overflowX: 'hidden',
-    }}>
+    <div style={{ minHeight:'100vh', background:'linear-gradient(180deg,#fdf8e8 0%,#f5e4a8 25%,#faecd0 60%,#fdf8e8 100%)', color:'#2a1500', fontFamily:'Georgia,serif', overflowX:'hidden' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        ::-webkit-scrollbar { width: 3px; }
-        ::-webkit-scrollbar-thumb { background: rgba(139,105,20,0.25); }
+        * { box-sizing:border-box; margin:0; padding:0; }
+        ::-webkit-scrollbar { width:3px; }
+        ::-webkit-scrollbar-thumb { background:rgba(139,105,20,0.25); }
         @keyframes float-m { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
         @keyframes shimmer-m { 0%{background-position:-200% center} 100%{background-position:200% center} }
         @keyframes rotate-m { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes petal-m {
-          0%{transform:translateY(-20px) rotate(0deg);opacity:0}
-          10%{opacity:0.7} 100%{transform:translateY(105vh) rotate(720deg);opacity:0}
-        }
+        @keyframes petal-m { 0%{transform:translateY(-20px) rotate(0deg);opacity:0} 10%{opacity:0.7} 100%{transform:translateY(105vh) rotate(720deg);opacity:0} }
         @keyframes invite-m { 0%{opacity:0;transform:translateY(12px)} 100%{opacity:1;transform:translateY(0)} }
-        @keyframes fade-out-invite { 0%{opacity:1} 100%{opacity:0} }
-        .shimmer-main-m {
-          background: linear-gradient(90deg, #6B4F00, #C9A630, #8B6914, #C9A630, #6B4F00);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          animation: shimmer-m 3.5s linear infinite;
-        }
+        @keyframes fade-out-m { 0%{opacity:1} 100%{opacity:0} }
+        .shimmer-main-m { background:linear-gradient(90deg,#6B4F00,#C9A630,#8B6914,#C9A630,#6B4F00); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:shimmer-m 3.5s linear infinite; }
         .petal-m { position:fixed; pointer-events:none; animation:petal-m linear infinite; z-index:0; }
-        .nav-btn-m:hover { color: #6B4F00 !important; }
+        .nav-btn-m:hover { color:#6B4F00 !important; }
+        .env-back-btn:hover { background:rgba(139,105,20,0.15) !important; }
       `}</style>
 
       {phase === 'envelope' && <ScrollScene onComplete={handleComplete} />}
 
       {(phase === 'invite' || phase === 'fading') && (
-        <div ref={mainRef} style={{
-          overflowY: phase === 'fading' ? 'hidden' : 'auto',
-          height: '100vh',
-          animation: phase === 'fading' ? 'fade-out-invite 0.4s ease forwards' : 'invite-m 0.9s ease forwards',
-        }}>
+        <div ref={mainRef} style={{ overflowY:'auto', height:'100vh', animation: phase === 'fading' ? 'fade-out-m 0.35s ease forwards' : 'invite-m 0.8s ease forwards' }}>
 
           {/* Petals */}
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="petal-m" style={{
-              left: `${10 + i * 18}%`, top: '-30px', fontSize: 14,
-              animationDuration: `${9 + i * 2}s`, animationDelay: `${i * 2}s`,
-            }}>🌸</div>
+          {[...Array(5)].map((_,i) => (
+            <div key={i} className="petal-m" style={{ left:`${10+i*18}%`, top:'-30px', fontSize:14, animationDuration:`${9+i*2}s`, animationDelay:`${i*2}s` }}>🌸</div>
           ))}
 
           {/* Nav */}
-          <nav style={{
-            position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-            background: 'rgba(253,248,232,0.93)', backdropFilter: 'blur(16px)',
-            borderBottom: '1px solid rgba(139,105,20,0.12)', padding: '0 20px',
-          }}>
-            <div style={{ maxWidth: 500, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 52 }}>
-              <div style={{ fontSize: 14, color: '#8B6914', fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif", letterSpacing: 2 }}>S & P</div>
-              <div style={{ display: 'flex', gap: 2 }}>
-                {[['home', 'Home'], ['events', 'Events'], ['rsvp', 'RSVP']].map(([id, label]) => (
-                  <button key={id} className="nav-btn-m" onClick={() => scrollTo(id)} style={{
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    color: activeSection === id ? '#6B4F00' : '#A0855A',
-                    fontSize: 12, padding: '6px 12px', letterSpacing: 1,
-                    textTransform: 'uppercase', transition: 'color 0.2s', fontFamily: 'Georgia, serif',
-                  }}>{label}</button>
+          <nav style={{ position:'fixed', top:0, left:0, right:0, zIndex:100, background:'rgba(253,248,232,0.93)', backdropFilter:'blur(16px)', borderBottom:'1px solid rgba(139,105,20,0.12)', padding:'0 16px' }}>
+            <div style={{ maxWidth:500, margin:'0 auto', display:'flex', alignItems:'center', justifyContent:'space-between', height:52 }}>
+              {/* Envelope back button */}
+              <button className="env-back-btn" onClick={handleBackToEnvelope} title="Back to envelope" style={{ background:'rgba(139,105,20,0.08)', border:'1px solid rgba(139,105,20,0.2)', borderRadius:20, padding:'5px 12px', cursor:'pointer', display:'flex', alignItems:'center', gap:6, transition:'background 0.2s' }}>
+                <span style={{ fontSize:16 }}>✉️</span>
+                <span style={{ fontSize:11, color:'#8B6914', fontFamily:'Georgia,serif', letterSpacing:1 }}>S & P</span>
+              </button>
+              <div style={{ display:'flex', gap:2 }}>
+                {[['home','Home'],['events','Events'],['rsvp','RSVP']].map(([id,label]) => (
+                  <button key={id} className="nav-btn-m" onClick={() => scrollTo(id)} style={{ background:'none', border:'none', cursor:'pointer', color: activeSection===id ? '#6B4F00' : '#A0855A', fontSize:12, padding:'6px 12px', letterSpacing:1, textTransform:'uppercase', transition:'color 0.2s', fontFamily:'Georgia,serif' }}>{label}</button>
                 ))}
               </div>
             </div>
           </nav>
 
           {/* Hero */}
-          <section id="home" style={{
-            minHeight: '100vh', display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
-            position: 'relative', padding: '80px 24px 40px', overflow: 'hidden',
-          }}>
-            {/* Kolam corners on main page */}
-            <div style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}><KolamCorner size={120} opacity={0.1} /></div>
-            <div style={{ position: 'absolute', top: 0, right: 0, pointerEvents: 'none' }}><KolamCorner size={120} opacity={0.1} flip /></div>
-            <div style={{ position: 'absolute', bottom: 0, left: 0, pointerEvents: 'none', transform: 'scaleY(-1)' }}><KolamCorner size={100} opacity={0.08} /></div>
-            <div style={{ position: 'absolute', bottom: 0, right: 0, pointerEvents: 'none', transform: 'scale(-1)' }}><KolamCorner size={100} opacity={0.08} /></div>
+          <section id="home" style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', position:'relative', padding:'80px 24px 40px', overflow:'hidden' }}>
+            <div style={{ position:'absolute', top:0, left:0, pointerEvents:'none' }}><KolamCorner size={120} opacity={0.1} /></div>
+            <div style={{ position:'absolute', top:0, right:0, pointerEvents:'none' }}><KolamCorner size={120} opacity={0.1} flip /></div>
+            <div style={{ position:'absolute', bottom:0, left:0, pointerEvents:'none', transform:'scaleY(-1)' }}><KolamCorner size={100} opacity={0.08} /></div>
+            <div style={{ position:'absolute', bottom:0, right:0, pointerEvents:'none', transform:'scale(-1)' }}><KolamCorner size={100} opacity={0.08} /></div>
+            <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', animation:'rotate-m 80s linear infinite', pointerEvents:'none' }}><MandalaBg /></div>
+            <div style={{ position:'absolute', inset:0, pointerEvents:'none', backgroundImage:'radial-gradient(circle,rgba(139,105,20,0.06) 1px,transparent 1px)', backgroundSize:'28px 28px' }} />
 
-            {/* Mandala bg */}
-            <div style={{
-              position: 'absolute', top: '50%', left: '50%',
-              transform: 'translate(-50%, -50%)',
-              animation: 'rotate-m 80s linear infinite', pointerEvents: 'none',
-            }}><MandalaBg /></div>
-
-            {/* Dot pattern */}
-            <div style={{
-              position: 'absolute', inset: 0, pointerEvents: 'none',
-              backgroundImage: 'radial-gradient(circle, rgba(139,105,20,0.06) 1px, transparent 1px)',
-              backgroundSize: '28px 28px',
-            }} />
-
-            <div style={{
-              position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 440,
-              opacity: heroVisible ? 1 : 0,
-              transform: heroVisible ? 'translateY(0)' : 'translateY(20px)',
-              transition: 'opacity 0.8s ease, transform 0.8s ease',
-            }}>
-              {/* Toran */}
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 4, marginBottom: 14, fontSize: 14 }}>
-                {['🌿','🍃','🌸','💐','🌸','🍃','🌿'].map((e, i) => (
-                  <span key={i} style={{ opacity: 0.7 }}>{e}</span>
-                ))}
+            <div style={{ position:'relative', zIndex:1, textAlign:'center', maxWidth:440, opacity:heroVisible?1:0, transform:heroVisible?'translateY(0)':'translateY(20px)', transition:'opacity 0.8s ease,transform 0.8s ease' }}>
+              <div style={{ display:'flex', justifyContent:'center', gap:4, marginBottom:14, fontSize:14 }}>
+                {['🌿','🍃','🌸','💐','🌸','🍃','🌿'].map((e,i)=><span key={i} style={{opacity:0.7}}>{e}</span>)}
               </div>
-
-              <div style={{ fontSize: 11, letterSpacing: 5, color: '#A0855A', textTransform: 'uppercase', marginBottom: 8, fontFamily: 'Georgia, serif' }}>
-                Let's Celebrate
-              </div>
-              <div style={{ fontSize: 12, color: '#C9A630', fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif", marginBottom: 12 }}>
-                శుభ వివాహం
-              </div>
-
-              <h1 style={{ fontSize: 'clamp(56px, 15vw, 80px)', fontFamily: "'Playfair Display', serif", fontWeight: 900, lineHeight: 1, marginBottom: 0 }}>
+              <div style={{ fontSize:11, letterSpacing:5, color:'#A0855A', textTransform:'uppercase', marginBottom:8, fontFamily:'Georgia,serif' }}>Let's Celebrate</div>
+              <div style={{ fontSize:12, color:'#C9A630', fontStyle:'italic', fontFamily:"'Cormorant Garamond',serif", marginBottom:12 }}>శుభ వివాహం</div>
+              <h1 style={{ fontSize:'clamp(56px,15vw,80px)', fontFamily:"'Playfair Display',serif", fontWeight:900, lineHeight:1, marginBottom:0 }}>
                 <span className="shimmer-main-m">Srinith</span>
               </h1>
-              <div style={{ fontSize: 14, color: '#A0855A', fontStyle: 'italic', margin: '2px 0 2px', fontFamily: "'Cormorant Garamond', serif", letterSpacing: 3 }}>
-                — weds —
-              </div>
-              <h1 style={{ fontSize: 'clamp(56px, 15vw, 80px)', fontFamily: "'Playfair Display', serif", fontWeight: 900, lineHeight: 1, marginBottom: 20 }}>
+              <div style={{ fontSize:14, color:'#A0855A', fontStyle:'italic', margin:'2px 0', fontFamily:"'Cormorant Garamond',serif", letterSpacing:3 }}>— weds —</div>
+              <h1 style={{ fontSize:'clamp(56px,15vw,80px)', fontFamily:"'Playfair Display',serif", fontWeight:900, lineHeight:1, marginBottom:20 }}>
                 <span className="shimmer-main-m">Pranathi</span>
               </h1>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center', marginBottom: 20 }}>
-                <div style={{ height: 1, width: 50, background: 'linear-gradient(to right, transparent, #C9A630)' }} />
-                <span style={{ fontSize: 16 }}>🌺</span>
-                <div style={{ height: 1, width: 50, background: 'linear-gradient(to left, transparent, #C9A630)' }} />
+              <div style={{ display:'flex', alignItems:'center', gap:12, justifyContent:'center', marginBottom:20 }}>
+                <div style={{ height:1, width:50, background:'linear-gradient(to right,transparent,#C9A630)' }} />
+                <span style={{ fontSize:16 }}>🌺</span>
+                <div style={{ height:1, width:50, background:'linear-gradient(to left,transparent,#C9A630)' }} />
               </div>
-
-              {/* Parents */}
-              <div style={{
-                background: 'rgba(255,255,255,0.65)', border: '1px solid rgba(139,105,20,0.18)',
-                borderRadius: 16, padding: '16px 20px', marginBottom: 20,
-                backdropFilter: 'blur(8px)',
-              }}>
-                <div style={{ fontSize: 10, letterSpacing: 2, color: '#A0855A', marginBottom: 10, textTransform: 'uppercase' }}>Blessed by</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 8, alignItems: 'center' }}>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 10, color: '#8B6914', marginBottom: 2 }}>Groom's Parents</div>
-                    <div style={{ fontSize: 12, color: '#2a1500', lineHeight: 1.5, fontFamily: "'Cormorant Garamond', serif" }}>[Name] &<br />Smt. Vijaya</div>
+              <div style={{ background:'rgba(255,255,255,0.65)', border:'1px solid rgba(139,105,20,0.18)', borderRadius:16, padding:'16px 20px', marginBottom:20, backdropFilter:'blur(8px)' }}>
+                <div style={{ fontSize:10, letterSpacing:2, color:'#A0855A', marginBottom:10, textTransform:'uppercase' }}>Blessed by</div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr auto 1fr', gap:8, alignItems:'center' }}>
+                  <div style={{ textAlign:'right' }}>
+                    <div style={{ fontSize:10, color:'#8B6914', marginBottom:2 }}>Groom's Parents</div>
+                    <div style={{ fontSize:12, color:'#2a1500', lineHeight:1.5, fontFamily:"'Cormorant Garamond',serif" }}>[Name] &<br/>Smt. Vijaya</div>
                   </div>
-                  <div style={{ color: '#C9A630', fontSize: 14, opacity: 0.5 }}>✦</div>
-                  <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontSize: 10, color: '#8B6914', marginBottom: 2 }}>Bride's Parents</div>
-                    <div style={{ fontSize: 12, color: '#2a1500', lineHeight: 1.5, fontFamily: "'Cormorant Garamond', serif" }}>Sri. Sridhar Reddy &<br />Smt. Sunitha</div>
+                  <div style={{ color:'#C9A630', fontSize:14, opacity:0.5 }}>✦</div>
+                  <div style={{ textAlign:'left' }}>
+                    <div style={{ fontSize:10, color:'#8B6914', marginBottom:2 }}>Bride's Parents</div>
+                    <div style={{ fontSize:12, color:'#2a1500', lineHeight:1.5, fontFamily:"'Cormorant Garamond',serif" }}>Sri. Sridhar Reddy &<br/>Smt. Sunitha</div>
                   </div>
                 </div>
               </div>
-
-              {/* Countdown */}
-              <div style={{ marginBottom: 24 }}>
-                <div style={{ fontSize: 10, letterSpacing: 3, color: '#A0855A', textTransform: 'uppercase', marginBottom: 10 }}>Wedding Countdown</div>
+              <div style={{ marginBottom:24 }}>
+                <div style={{ fontSize:10, letterSpacing:3, color:'#A0855A', textTransform:'uppercase', marginBottom:10 }}>Wedding Countdown</div>
                 <CountdownTimer targetDate="2026-08-26T11:20:00" />
               </div>
-
-              <button onClick={() => scrollTo('events')} style={{
-                background: 'rgba(139,105,20,0.1)', border: '1.5px solid rgba(139,105,20,0.3)',
-                borderRadius: 50, padding: '12px 28px', color: '#6B4F00',
-                cursor: 'pointer', fontFamily: "'Playfair Display', serif",
-                fontSize: 14, letterSpacing: 1, animation: 'float-m 3s ease-in-out infinite',
-              }}>
+              <button onClick={() => scrollTo('events')} style={{ background:'rgba(139,105,20,0.1)', border:'1.5px solid rgba(139,105,20,0.3)', borderRadius:50, padding:'12px 28px', color:'#6B4F00', cursor:'pointer', fontFamily:"'Playfair Display',serif", fontSize:14, letterSpacing:1, animation:'float-m 3s ease-in-out infinite' }}>
                 View All Events ↓
               </button>
             </div>
           </section>
 
           {/* Events */}
-          <section id="events" style={{ maxWidth: 500, margin: '0 auto', padding: '50px 20px', position: 'relative' }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', opacity: 0.06 }}><KolamCorner size={80} opacity={1} /></div>
-            <div style={{ position: 'absolute', top: 0, right: 0, pointerEvents: 'none', opacity: 0.06 }}><KolamCorner size={80} opacity={1} flip /></div>
-            <div style={{ textAlign: 'center', marginBottom: 30 }}>
-              <div style={{ fontSize: 10, letterSpacing: 4, color: '#A0855A', textTransform: 'uppercase', marginBottom: 8 }}>The Celebrations</div>
-              <h2 style={{ fontSize: 30, fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>
+          <section id="events" style={{ maxWidth:500, margin:'0 auto', padding:'50px 20px', position:'relative' }}>
+            <div style={{ position:'absolute', top:0, left:0, pointerEvents:'none', opacity:0.06 }}><KolamCorner size={80} opacity={1} /></div>
+            <div style={{ position:'absolute', top:0, right:0, pointerEvents:'none', opacity:0.06 }}><KolamCorner size={80} opacity={1} flip /></div>
+            <div style={{ textAlign:'center', marginBottom:30 }}>
+              <div style={{ fontSize:10, letterSpacing:4, color:'#A0855A', textTransform:'uppercase', marginBottom:8 }}>The Celebrations</div>
+              <h2 style={{ fontSize:30, fontFamily:"'Playfair Display',serif", fontWeight:700 }}>
                 <span className="shimmer-main-m">Five Sacred Events</span>
               </h2>
-              <div style={{ fontSize: 12, color: '#A0855A', marginTop: 6, fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif" }}>
-                వేడుకలకు ఆహ్వానం — You are warmly invited
-              </div>
+              <div style={{ fontSize:12, color:'#A0855A', marginTop:6, fontStyle:'italic', fontFamily:"'Cormorant Garamond',serif" }}>వేడుకలకు ఆహ్వానం — You are warmly invited</div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {events.map((event, i) => <EventCard key={event.id} event={event} index={i} />)}
+            <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+              {events.map((event,i) => <EventCard key={event.id} event={event} index={i} />)}
             </div>
           </section>
 
           {/* Quote */}
-          <section style={{ padding: '32px 24px', textAlign: 'center', background: 'rgba(255,255,255,0.4)', borderTop: '1px solid rgba(139,105,20,0.08)', borderBottom: '1px solid rgba(139,105,20,0.08)' }}>
-            <div style={{ maxWidth: 340, margin: '0 auto' }}>
-              <div style={{ fontSize: 28, color: '#C9A630', opacity: 0.35, fontFamily: 'serif' }}>"</div>
-              <p style={{ fontSize: 15, fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif", color: '#6B4F00', lineHeight: 1.8, margin: '4px 0' }}>
-                A love that builds palaces out of promises,<br />and turns every vow into a universe.
+          <section style={{ padding:'32px 24px', textAlign:'center', background:'rgba(255,255,255,0.4)', borderTop:'1px solid rgba(139,105,20,0.08)', borderBottom:'1px solid rgba(139,105,20,0.08)' }}>
+            <div style={{ maxWidth:340, margin:'0 auto' }}>
+              <div style={{ fontSize:28, color:'#C9A630', opacity:0.35, fontFamily:'serif' }}>"</div>
+              <p style={{ fontSize:15, fontStyle:'italic', fontFamily:"'Cormorant Garamond',serif", color:'#6B4F00', lineHeight:1.8, margin:'4px 0' }}>
+                A love that builds palaces out of promises,<br/>and turns every vow into a universe.
               </p>
-              <div style={{ fontSize: 28, color: '#C9A630', opacity: 0.35, fontFamily: 'serif' }}>"</div>
+              <div style={{ fontSize:28, color:'#C9A630', opacity:0.35, fontFamily:'serif' }}>"</div>
             </div>
           </section>
 
           {/* RSVP */}
-          <section id="rsvp" style={{ maxWidth: 500, margin: '0 auto', padding: '52px 20px 80px' }}>
-            <div style={{ textAlign: 'center', marginBottom: 26 }}>
-              <div style={{ fontSize: 10, letterSpacing: 4, color: '#A0855A', textTransform: 'uppercase', marginBottom: 8 }}>Join Us</div>
-              <h2 style={{ fontSize: 30, fontFamily: "'Playfair Display', serif", fontWeight: 700, marginBottom: 6 }}>
+          <section id="rsvp" style={{ maxWidth:500, margin:'0 auto', padding:'52px 20px 80px' }}>
+            <div style={{ textAlign:'center', marginBottom:26 }}>
+              <div style={{ fontSize:10, letterSpacing:4, color:'#A0855A', textTransform:'uppercase', marginBottom:8 }}>Join Us</div>
+              <h2 style={{ fontSize:30, fontFamily:"'Playfair Display',serif", fontWeight:700, marginBottom:6 }}>
                 <span className="shimmer-main-m">RSVP</span>
               </h2>
-              <p style={{ fontSize: 12, color: '#A0855A', fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif" }}>మీ హాజరు మాకు ఆశీర్వాదం</p>
+              <p style={{ fontSize:12, color:'#A0855A', fontStyle:'italic', fontFamily:"'Cormorant Garamond',serif" }}>మీ హాజరు మాకు ఆశీర్వాదం</p>
             </div>
             <RSVPForm />
           </section>
 
           {/* Footer */}
-          <footer style={{ textAlign: 'center', padding: '22px', borderTop: '1px solid rgba(139,105,20,0.08)', background: 'rgba(255,255,255,0.3)', position: 'relative' }}>
-            <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'scaleY(-1)', pointerEvents: 'none' }}><KolamCorner size={60} opacity={0.06} /></div>
-            <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'scale(-1)', pointerEvents: 'none' }}><KolamCorner size={60} opacity={0.06} /></div>
-            <div style={{ fontSize: 16, marginBottom: 6 }}>🌺 💐 🌺</div>
-            <div style={{ fontSize: 11, color: '#A0855A', fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif" }}>
-              శుభం భవతు — May there be auspiciousness
-            </div>
-            <div style={{ fontSize: 9, color: '#C9A630', marginTop: 6, letterSpacing: 2 }}>
-              #SrinithWedsPranathi · AUGUST 2026
-            </div>
+          <footer style={{ textAlign:'center', padding:'22px', borderTop:'1px solid rgba(139,105,20,0.08)', background:'rgba(255,255,255,0.3)', position:'relative' }}>
+            <div style={{ position:'absolute', bottom:0, left:0, transform:'scaleY(-1)', pointerEvents:'none' }}><KolamCorner size={60} opacity={0.06} /></div>
+            <div style={{ position:'absolute', bottom:0, right:0, transform:'scale(-1)', pointerEvents:'none' }}><KolamCorner size={60} opacity={0.06} /></div>
+            <div style={{ fontSize:16, marginBottom:6 }}>🌺 💐 🌺</div>
+            <div style={{ fontSize:11, color:'#A0855A', fontStyle:'italic', fontFamily:"'Cormorant Garamond',serif" }}>శుభం భవతు — May there be auspiciousness</div>
+            <div style={{ fontSize:9, color:'#C9A630', marginTop:6, letterSpacing:2 }}>#SrinithWedsPranathi · AUGUST 2026</div>
           </footer>
         </div>
       )}
     </div>
   );
 }
-
