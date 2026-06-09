@@ -234,17 +234,52 @@ function RSVPForm() {
 function ScrollScene({ onComplete }) {
   const sceneRef = useRef();
   const [scrollY, setScrollY] = useState(0);
+  const scrollYRef = useRef(0);
+  const completedRef = useRef(false);
   const TOTAL_SCROLL = 1400;
+
+  const advance = (delta) => {
+    if (completedRef.current) return;
+    const next = Math.max(0, Math.min(TOTAL_SCROLL, scrollYRef.current + delta));
+    scrollYRef.current = next;
+    setScrollY(next);
+    if (next >= TOTAL_SCROLL - 50) {
+      completedRef.current = true;
+      onComplete();
+    }
+  };
 
   useEffect(() => {
     const el = sceneRef.current;
     if (!el) return;
-    const handleScroll = () => {
-      setScrollY(el.scrollTop);
-      if (el.scrollTop >= TOTAL_SCROLL - 50) onComplete();
+
+    // Touch scroll
+    const handleScroll = () => advance(el.scrollTop - scrollYRef.current);
+
+    // Mouse wheel + trackpad (fires on all desktop browsers)
+    const handleWheel = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // deltaY can be large on trackpad, clamp per frame
+      advance(Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY), 60));
     };
+
+    // Keyboard arrow keys
+    const handleKey = (e) => {
+      if (e.key === 'ArrowDown' || e.key === 'PageDown') advance(80);
+      if (e.key === 'ArrowUp' || e.key === 'PageUp') advance(-80);
+    };
+
     el.addEventListener('scroll', handleScroll, { passive: true });
-    return () => el.removeEventListener('scroll', handleScroll);
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('keydown', handleKey);
+    el.focus();
+
+    return () => {
+      el.removeEventListener('scroll', handleScroll);
+      el.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('keydown', handleKey);
+    };
   }, []);
 
   const prog = (start, end) => Math.max(0, Math.min(1, (scrollY - start) / (end - start)));
@@ -263,7 +298,7 @@ function ScrollScene({ onComplete }) {
   const sceneScale  = 1 + prog(1000, 1400) * 0.35;
 
   return (
-    <div ref={sceneRef} style={{ position: 'fixed', inset: 0, zIndex: 1000, overflowY: 'scroll', overflowX: 'hidden' }}>
+    <div ref={sceneRef} tabIndex={0} style={{ position: 'fixed', inset: 0, zIndex: 1000, overflowY: 'scroll', overflowX: 'hidden', outline: 'none' }}>
       <style>{`
         @keyframes float-env2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
         @keyframes petal-sc { 0%{transform:translateY(-10px) rotate(0deg);opacity:0} 10%{opacity:0.8} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
@@ -365,7 +400,7 @@ function ScrollScene({ onComplete }) {
             opacity: flipAngle < 90 ? 0 : sealOpacity,
             pointerEvents:'none',
           }}>
-            <div style={{ fontFamily:"'Playfair Display',serif", color:'#D4A017', fontSize:11, fontWeight:700, textAlign:'center', lineHeight:1.2 }}>S<br/><span style={{fontSize:7}}>✦</span><br/>P</div>
+            <div style={{ fontFamily:"'Playfair Display',serif", color:'#D4A017', fontSize:11, fontWeight:700, textAlign:'center', lineHeight:1.2, transform:'rotateY(180deg)' }}>S<br/><span style={{fontSize:7}}>✦</span><br/>P</div>
           </div>
         </div>
 
@@ -405,9 +440,11 @@ export default function WeddingInvite() {
     if (phase !== 'invite') return;
     const el = mainRef.current;
     if (!el) return;
+    let hasScrolledDown = false;
+
     const handleScroll = () => {
-      if (el.scrollTop === 0) {
-        // Fade out invite, then show envelope
+      if (el.scrollTop > 50) hasScrolledDown = true;
+      if (el.scrollTop === 0 && hasScrolledDown) {
         setPhase('fading');
         setTimeout(() => {
           setPhase('envelope');
