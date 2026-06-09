@@ -4,11 +4,11 @@ const VENUE = "Sri Vinoda Convention, Hyderabad";
 const VENUE_URL = "https://maps.app.goo.gl/Xapm2UzTwXJ5vzgu5";
 
 const events = [
-  { id: "engagement", title: "Engagement", telugu: "నిశ్చితార్థం", date: "June 25, 2026", day: "Thursday", time: "12:30 PM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#8B6914", icon: "💍", photo: "/IMG_5770.PNG" },
-  { id: "haldi", title: "Haldi Ceremony", telugu: "పసుపు కార్యక్రమం", date: "August 23, 2026", day: "Sunday", time: "12:00 PM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#C97D00", icon: "🍯", photo: null },
-  { id: "sangeet", title: "Sangeet Night", telugu: "సంగీత్ నైట్", date: "August 23, 2026", day: "Sunday", time: "7:00 PM", type: "Dinner", venue: VENUE, venueUrl: VENUE_URL, color: "#2D6A4F", icon: "🎶", photo: null },
-  { id: "wedding", title: "Wedding", telugu: "వివాహం", date: "August 26, 2026", day: "Wednesday", time: "1:30 PM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#8B1A1A", icon: "💐", photo: null },
-  { id: "reception", title: "Reception", telugu: "రిసెప్షన్", date: "August 28, 2026", day: "Friday", time: "7:30 PM", type: "Dinner", venue: "Venue TBA", venueUrl: null, color: "#5B2D8E", icon: "🥂", photo: null },
+  { id: "engagement", title: "Engagement", telugu: "నిశ్చితార్థం", date: "June 25, 2026", day: "Thursday", time: "12:30 PM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#8B6914", icon: "💍", photo: "/eng.PNG" },
+  { id: "haldi", title: "Haldi Ceremony", telugu: "పసుపు కార్యక్రమం", date: "August 23, 2026", day: "Sunday", time: "12:00 PM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#C97D00", icon: "🍯", photo: "/hal.PNG" },
+  { id: "sangeet", title: "Sangeet Night", telugu: "సంగీత్ నైట్", date: "August 23, 2026", day: "Sunday", time: "7:00 PM", type: "Dinner", venue: VENUE, venueUrl: VENUE_URL, color: "#2D6A4F", icon: "🎶", photo: "/san.PNG" },
+  { id: "wedding", title: "Wedding", telugu: "వివాహం", date: "August 26, 2026", day: "Wednesday", time: "11:20 AM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#8B1A1A", icon: "💐", photo: "/wed.PNG" },
+  { id: "reception", title: "Reception", telugu: "రిసెప్షన్", date: "August 28, 2026", day: "Friday", time: "7:30 PM", type: "Dinner", venue: "Venue TBA", venueUrl: null, color: "#5B2D8E", icon: "🥂", photo: "/rec.PNG" },
 ];
 
 // Telugu kolam SVG pattern
@@ -142,24 +142,24 @@ function EventCard({ event, index }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}>{event.icon}</div>
           <div>
-            {!event.photo && <div style={{ fontSize: 10, color: event.color, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 2 }}>{event.type} · {event.type === 'Lunch' ? 'భోజనం' : 'విందు'}</div>}
-            <div style={{ fontSize: 22, fontFamily: "'Playfair Display', serif", color: '#2a1500', fontWeight: 700, lineHeight: 1.1 }}>{event.title}</div>
-            <div style={{ fontSize: 12, color: event.color, fontStyle: 'italic', marginTop: 2 }}>{event.telugu}</div>
+            {!event.photo && <div style={{ fontSize:11, color:event.color, letterSpacing:3, textTransform:'uppercase', marginBottom:2 }}>{event.type} · {event.type === 'Lunch' ? 'భోజనం' : 'విందు'}</div>}
+            <div style={{ fontSize:26, fontFamily:"'Playfair Display',serif", color:'#2a1500', fontWeight:700, lineHeight:1.1 }}>{event.title}</div>
+            <div style={{ fontSize:14, color:event.color, fontStyle:'italic', marginTop:3 }}>{event.telugu}</div>
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, borderTop: `1px solid ${event.color}12`, paddingTop: 12 }}>
           <div>
-            <div style={{ fontSize: 10, color: '#bbb', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 2 }}>Date</div>
-            <div style={{ fontSize: 13, color: '#2a1500' }}>{event.date}</div>
-            <div style={{ fontSize: 11, color: event.color }}>{event.day}</div>
+            <div style={{ fontSize: 11, color: '#bbb', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Date</div>
+            <div style={{ fontSize: 15, color: '#2a1500' }}>{event.date}</div>
+            <div style={{ fontSize: 12, color: event.color }}>{event.day}</div>
           </div>
           <div>
-            <div style={{ fontSize: 10, color: '#bbb', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 2 }}>Time</div>
-            <div style={{ fontSize: 13, color: '#2a1500' }}>{event.time}</div>
+            <div style={{ fontSize: 11, color: '#bbb', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Time</div>
+            <div style={{ fontSize: 15, color: '#2a1500' }}>{event.time}</div>
           </div>
           <div style={{ gridColumn: '1 / -1' }}>
-            <div style={{ fontSize: 10, color: '#bbb', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 2 }}>Venue</div>
-            <div style={{ fontSize: 13, color: '#2a1500' }}>{event.venue}</div>
+            <div style={{ fontSize: 11, color: '#bbb', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Venue</div>
+            <div style={{ fontSize: 15, color: '#2a1500' }}>{event.venue}</div>
             {event.venueUrl ? (
               <a href={event.venueUrl} target="_blank" rel="noopener noreferrer" style={{
                 display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 8,
@@ -578,7 +578,7 @@ export default function WeddingInvite() {
               {/* Countdown */}
               <div style={{ marginBottom: 24 }}>
                 <div style={{ fontSize: 10, letterSpacing: 3, color: '#A0855A', textTransform: 'uppercase', marginBottom: 10 }}>Wedding Countdown</div>
-                <CountdownTimer targetDate="2026-08-26T13:30:00" />
+                <CountdownTimer targetDate="2026-08-26T11:20:00" />
               </div>
 
               <button onClick={() => scrollTo('events')} style={{
