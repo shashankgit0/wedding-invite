@@ -113,7 +113,7 @@ function EventCard({ event, index }) {
       boxShadow: '0 4px 24px rgba(139,105,20,0.08)',
     }}>
       {event.photo && (
-        <div style={{ width:'100%', height:300, position:'relative', overflow:'hidden' }}>
+        <div style={{ width:'100%', height:220, position:'relative', overflow:'hidden' }}>
           <div style={{
             position:'absolute', inset:0,
             backgroundImage:`url(${event.photo})`,
@@ -130,7 +130,7 @@ function EventCard({ event, index }) {
             fontSize:11, color:event.color, letterSpacing:2, textTransform:'uppercase',
             fontFamily:'Georgia,serif', border:`1px solid ${event.color}30`,
             zIndex:2,
-          }}>{event.type} · {event.type === 'Lunch' ? 'భోజనం' : 'విందు'}</div>
+          }}>{event.type} · {event.type === 'Lunch' ? 'భోజనం' : 'డిన్నర్'}</div>
         </div>
       )}
       <div style={{ padding: '20px 20px 18px' }}>
@@ -141,7 +141,7 @@ function EventCard({ event, index }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}>{event.icon}</div>
           <div>
-            {!event.photo && <div style={{ fontSize:12, color:event.color, letterSpacing:3, textTransform:'uppercase', marginBottom:3 }}>{event.type} · {event.type === 'Lunch' ? 'భోజనం' : 'విందు'}</div>}
+            {!event.photo && <div style={{ fontSize:12, color:event.color, letterSpacing:3, textTransform:'uppercase', marginBottom:3 }}>{event.type} · {event.type === 'Lunch' ? 'భోజనం' : 'డిన్నర్'}</div>}
             <div style={{ fontSize:30, fontFamily:"'Playfair Display',serif", color:'#2a1500', fontWeight:700, lineHeight:1.1 }}>{event.title}</div>
             <div style={{ fontSize:16, color:event.color, fontStyle:'italic', marginTop:4 }}>{event.telugu}</div>
           </div>
@@ -457,10 +457,25 @@ export default function WeddingInvite() {
     const el = mainRef.current;
     if (!el) return;
     let hasScrolledDown = false;
+    let timer = null;
 
     const handleScroll = () => {
-      if (el.scrollTop > 50) hasScrolledDown = true;
-      if (el.scrollTop === 0 && hasScrolledDown) {
+      if (el.scrollTop > 100) hasScrolledDown = true;
+      if (hasScrolledDown && el.scrollTop <= 0) {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          setPhase('fading');
+          setTimeout(() => {
+            setPhase('envelope');
+            setHeroVisible(false);
+          }, 400);
+        }, 50);
+      }
+    };
+
+    // Also handle wheel going up past top
+    const handleWheel = (e) => {
+      if (el.scrollTop <= 0 && e.deltaY < 0 && hasScrolledDown) {
         setPhase('fading');
         setTimeout(() => {
           setPhase('envelope');
@@ -468,8 +483,14 @@ export default function WeddingInvite() {
         }, 400);
       }
     };
+
     el.addEventListener('scroll', handleScroll, { passive: true });
-    return () => el.removeEventListener('scroll', handleScroll);
+    el.addEventListener('wheel', handleWheel, { passive: true });
+    return () => {
+      el.removeEventListener('scroll', handleScroll);
+      el.removeEventListener('wheel', handleWheel);
+      clearTimeout(timer);
+    };
   }, [phase]);
 
   const scrollTo = (id) => {
