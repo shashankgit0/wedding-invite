@@ -4,11 +4,11 @@ const VENUE = "Sri Vinoda Convention, Hyderabad";
 const VENUE_URL = "https://maps.app.goo.gl/Xapm2UzTwXJ5vzgu5";
 
 const events = [
-  { id: "engagement", title: "Engagement", telugu: "నిశ్చితార్థం", date: "June 25, 2026", day: "Thursday", time: "12:30 PM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#8B6914", icon: "💍", photo: "/eng.PNG" },
-  { id: "haldi", title: "Haldi Ceremony", telugu: "పసుపు కార్యక్రమం", date: "August 23, 2026", day: "Sunday", time: "12:00 PM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#C97D00", icon: "🍯", photo: "/hal.PNG" },
-  { id: "sangeet", title: "Sangeet Night", telugu: "సంగీత్ నైట్", date: "August 23, 2026", day: "Sunday", time: "7:00 PM", type: "Dinner", venue: VENUE, venueUrl: VENUE_URL, color: "#2D6A4F", icon: "🎶", photo: "/san.PNG" },
-  { id: "wedding", title: "Wedding", telugu: "వివాహం", date: "August 26, 2026", day: "Wednesday", time: "11:20 AM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#8B1A1A", icon: "💐", photo: "/wed.PNG" },
-  { id: "reception", title: "Reception", telugu: "రిసెప్షన్", date: "August 28, 2026", day: "Friday", time: "7:30 PM", type: "Dinner", venue: "Venue TBA", venueUrl: null, color: "#5B2D8E", icon: "🥂", photo: "/rec.PNG" },
+  { id: "engagement", title: "Engagement", telugu: "నిశ్చితార్థం", date: "June 25, 2026", day: "Thursday", time: "12:30 PM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#8B6914", icon: "💍", photo: "/eng.PNG", photoPos: "center 20%" },
+  { id: "haldi", title: "Haldi Ceremony", telugu: "పసుపు కార్యక్రమం", date: "August 23, 2026", day: "Sunday", time: "12:00 PM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#C97D00", icon: "🍯", photo: "/hal.PNG", photoPos: "center 55%" },
+  { id: "sangeet", title: "Sangeet Night", telugu: "సంగీత్ నైట్", date: "August 23, 2026", day: "Sunday", time: "7:00 PM", type: "Dinner", venue: VENUE, venueUrl: VENUE_URL, color: "#2D6A4F", icon: "🎶", photo: "/san.PNG", photoPos: "center 25%" },
+  { id: "wedding", title: "Wedding", telugu: "వివాహం", date: "August 26, 2026", day: "Wednesday", time: "11:20 AM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#8B1A1A", icon: "💐", photo: "/wed.PNG", photoPos: "center 20%" },
+  { id: "reception", title: "Reception", telugu: "రిసెప్షన్", date: "August 28, 2026", day: "Friday", time: "7:30 PM", type: "Dinner", venue: "Venue TBA", venueUrl: null, color: "#5B2D8E", icon: "🥂", photo: "/rec.PNG", photoPos: "center 25%" },
 ];
 
 // Telugu kolam SVG pattern
@@ -113,14 +113,13 @@ function EventCard({ event, index }) {
       boxShadow: '0 4px 24px rgba(139,105,20,0.08)',
     }}>
       {event.photo && (
-        <div style={{ width:'100%', height:280, position:'relative', overflow:'hidden' }}>
-          {/* Blurred photo layer */}
+        <div style={{ width:'100%', height:300, position:'relative', overflow:'hidden' }}>
           <div style={{
             position:'absolute', inset:0,
             backgroundImage:`url(${event.photo})`,
-            backgroundSize:'cover', backgroundPosition:'center 10%',
+            backgroundSize:'cover', backgroundPosition: event.photoPos || 'center 25%',
             filter:'blur(0.8px)',
-            transform:'scale(1.02)', // prevent blur edge artifacts
+            transform:'scale(1.02)',
           }} />
           {/* Gradient overlay */}
           <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom,transparent 50%,#fff 100%)' }} />
@@ -142,24 +141,24 @@ function EventCard({ event, index }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}>{event.icon}</div>
           <div>
-            {!event.photo && <div style={{ fontSize:11, color:event.color, letterSpacing:3, textTransform:'uppercase', marginBottom:2 }}>{event.type} · {event.type === 'Lunch' ? 'భోజనం' : 'విందు'}</div>}
-            <div style={{ fontSize:26, fontFamily:"'Playfair Display',serif", color:'#2a1500', fontWeight:700, lineHeight:1.1 }}>{event.title}</div>
-            <div style={{ fontSize:14, color:event.color, fontStyle:'italic', marginTop:3 }}>{event.telugu}</div>
+            {!event.photo && <div style={{ fontSize:12, color:event.color, letterSpacing:3, textTransform:'uppercase', marginBottom:3 }}>{event.type} · {event.type === 'Lunch' ? 'భోజనం' : 'విందు'}</div>}
+            <div style={{ fontSize:30, fontFamily:"'Playfair Display',serif", color:'#2a1500', fontWeight:700, lineHeight:1.1 }}>{event.title}</div>
+            <div style={{ fontSize:16, color:event.color, fontStyle:'italic', marginTop:4 }}>{event.telugu}</div>
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, borderTop: `1px solid ${event.color}12`, paddingTop: 12 }}>
           <div>
             <div style={{ fontSize: 11, color: '#bbb', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Date</div>
-            <div style={{ fontSize: 15, color: '#2a1500' }}>{event.date}</div>
-            <div style={{ fontSize: 12, color: event.color }}>{event.day}</div>
+            <div style={{ fontSize: 17, color: '#2a1500' }}>{event.date}</div>
+            <div style={{ fontSize: 13, color: event.color }}>{event.day}</div>
           </div>
           <div>
             <div style={{ fontSize: 11, color: '#bbb', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Time</div>
-            <div style={{ fontSize: 15, color: '#2a1500' }}>{event.time}</div>
+            <div style={{ fontSize: 17, color: '#2a1500' }}>{event.time}</div>
           </div>
           <div style={{ gridColumn: '1 / -1' }}>
             <div style={{ fontSize: 11, color: '#bbb', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Venue</div>
-            <div style={{ fontSize: 15, color: '#2a1500' }}>{event.venue}</div>
+            <div style={{ fontSize: 17, color: '#2a1500' }}>{event.venue}</div>
             {event.venueUrl ? (
               <a href={event.venueUrl} target="_blank" rel="noopener noreferrer" style={{
                 display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 8,
@@ -232,73 +231,93 @@ function RSVPForm() {
 
 // THE SCROLL SCENE — Apple style
 function ScrollScene({ onComplete }) {
-  const sceneRef = useRef();
-  const [scrollY, setScrollY] = useState(0);
-  const scrollYRef = useRef(0);
+  const [progress, setProgress] = useState(0); // 0 to 1
+  const progressRef = useRef(0);
   const completedRef = useRef(false);
-  const TOTAL_SCROLL = 1400;
+  const animFrameRef = useRef(null);
+  const targetRef = useRef(0);
+  const touchStartY = useRef(null);
 
-  const advance = (delta) => {
+  // Smoothly animate progress toward target (lerp)
+  useEffect(() => {
+    const animate = () => {
+      const current = progressRef.current;
+      const target = targetRef.current;
+      const diff = target - current;
+      if (Math.abs(diff) > 0.0005) {
+        const next = current + diff * 0.08;
+        progressRef.current = next;
+        setProgress(next);
+      }
+      animFrameRef.current = requestAnimationFrame(animate);
+    };
+    animFrameRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animFrameRef.current);
+  }, []);
+
+  const addDelta = (delta) => {
     if (completedRef.current) return;
-    const next = Math.max(0, Math.min(TOTAL_SCROLL, scrollYRef.current + delta));
-    scrollYRef.current = next;
-    setScrollY(next);
-    if (next >= TOTAL_SCROLL - 50) {
+    targetRef.current = Math.max(0, Math.min(1, targetRef.current + delta));
+    if (targetRef.current >= 0.98 && !completedRef.current) {
       completedRef.current = true;
-      onComplete();
+      setTimeout(onComplete, 300);
     }
   };
 
   useEffect(() => {
-    const el = sceneRef.current;
-    if (!el) return;
-
-    // Touch scroll
-    const handleScroll = () => advance(el.scrollTop - scrollYRef.current);
-
-    // Mouse wheel + trackpad (fires on all desktop browsers)
+    // Mouse wheel + trackpad — window level so browser can't intercept
     const handleWheel = (e) => {
       e.preventDefault();
-      e.stopPropagation();
-      // deltaY can be large on trackpad, clamp per frame
-      advance(Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY), 60));
+      addDelta(e.deltaY / 800);
     };
 
-    // Keyboard arrow keys
+    // Touch
+    const handleTouchStart = (e) => { touchStartY.current = e.touches[0].clientY; };
+    const handleTouchMove = (e) => {
+      if (touchStartY.current === null) return;
+      const dy = touchStartY.current - e.touches[0].clientY;
+      touchStartY.current = e.touches[0].clientY;
+      addDelta(dy / 400);
+    };
+    const handleTouchEnd = () => { touchStartY.current = null; };
+
+    // Keyboard
     const handleKey = (e) => {
-      if (e.key === 'ArrowDown' || e.key === 'PageDown') advance(80);
-      if (e.key === 'ArrowUp' || e.key === 'PageUp') advance(-80);
+      if (['ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); addDelta(0.08); }
+      if (['ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); addDelta(-0.08); }
     };
 
-    el.addEventListener('scroll', handleScroll, { passive: true });
-    el.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd);
     window.addEventListener('keydown', handleKey);
-    el.focus();
 
     return () => {
-      el.removeEventListener('scroll', handleScroll);
-      el.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('keydown', handleKey);
     };
   }, []);
 
+  // Map progress ranges to animation values
+  const p = (start, end) => Math.max(0, Math.min(1, (progress - start) / (end - start)));
+
+  const flipAngle   = p(0, 0.35) * 180;
+  const flapAngle   = p(0.35, 0.65) * 180;
+  const letterY     = -(p(0.62, 0.88) * 160);
+  const letterOpacity = p(0.60, 0.72);
+  const letterScale = 0.82 + p(0.62, 0.88) * 0.18;
+  const sealOpacity = Math.max(0, 1 - p(0.35, 0.50));
+  const sceneOpacity = 1 - p(0.88, 1.0);
+  const sceneScale  = 1 + p(0.85, 1.0) * 0.3;
+
   const prog = (start, end) => Math.max(0, Math.min(1, (scrollY - start) / (end - start)));
 
-  // Phase 1 (0–400): full 180deg Y flip
-  // Phase 2 (400–700): flap opens on back face
-  // Phase 3 (700–1050): letter rises
-  // Phase 4 (1050–1400): zoom out to invite
-  const flipAngle   = prog(0, 400) * 180;
-  const flapAngle   = prog(400, 700) * 180;
-  const letterY     = -(prog(700, 1050) * 160);
-  const letterOpacity = prog(680, 780);
-  const letterScale = 0.82 + prog(700, 1050) * 0.18;
-  const sealOpacity = Math.max(0, 1 - prog(400, 550)); // fades as flap starts opening
-  const sceneOpacity = 1 - prog(1050, 1300);
-  const sceneScale  = 1 + prog(1000, 1400) * 0.35;
-
   return (
-    <div ref={sceneRef} tabIndex={0} style={{ position: 'fixed', inset: 0, zIndex: 1000, overflowY: 'scroll', overflowX: 'hidden', outline: 'none' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000 }}>
       <style>{`
         @keyframes float-env2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
         @keyframes petal-sc { 0%{transform:translateY(-10px) rotate(0deg);opacity:0} 10%{opacity:0.8} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
@@ -308,11 +327,8 @@ function ScrollScene({ onComplete }) {
         .shimmer-env2 { background: linear-gradient(90deg,#6B4F00,#C9A630,#8B6914,#C9A630,#6B4F00); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:shimmer-sc 3s linear infinite; }
       `}</style>
 
-      {/* Scroll space */}
-      <div style={{ height: TOTAL_SCROLL + window.innerHeight, pointerEvents: 'none' }} />
-
       {/* Fixed visual */}
-      <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(160deg,#fdf8e8 0%,#f5e4a8 40%,#faecd0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', opacity: sceneOpacity, transform: `scale(${sceneScale})`, transformOrigin: 'center center', pointerEvents: scrollY >= TOTAL_SCROLL - 50 ? 'none' : 'auto' }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg,#fdf8e8 0%,#f5e4a8 40%,#faecd0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', opacity: sceneOpacity, transform: `scale(${sceneScale})`, transformOrigin: 'center center' }}>
 
         {/* Kolam corners */}
         <div style={{ position:'absolute', top:0, left:0, pointerEvents:'none' }}><KolamCorner size={140} opacity={0.15} /></div>
@@ -335,12 +351,12 @@ function ScrollScene({ onComplete }) {
         ))}
 
         {/* Toran */}
-        <div style={{ position:'absolute', top:30, left:'50%', transform:'translateX(-50%)', display:'flex', gap:6, pointerEvents:'none', opacity:Math.max(0,1-prog(0,200)) }}>
+        <div style={{ position:'absolute', top:30, left:'50%', transform:'translateX(-50%)', display:'flex', gap:6, pointerEvents:'none', opacity:Math.max(0,1-p(0,0.2)) }}>
           {['🌿','🍃','🌸','🍃','🌸','🍃','🌿'].map((e,i) => <span key={i} style={{ fontSize:12, opacity:0.6 }}>{e}</span>)}
         </div>
 
         {/* Label */}
-        <div style={{ fontSize:10, letterSpacing:5, color:'#A0855A', textTransform:'uppercase', marginBottom:24, fontFamily:'Georgia,serif', opacity:Math.max(0,1-prog(0,300)), transform:`translateY(${-prog(0,300)*20}px)` }}>
+        <div style={{ fontSize:10, letterSpacing:5, color:'#A0855A', textTransform:'uppercase', marginBottom:24, fontFamily:'Georgia,serif', opacity:Math.max(0,1-p(0,0.3)), transform:`translateY(${-p(0,0.3)*20}px)` }}>
           You are cordially invited
         </div>
 
@@ -405,7 +421,7 @@ function ScrollScene({ onComplete }) {
         </div>
 
         {/* Hint */}
-        <div style={{ marginTop:36, display:'flex', flexDirection:'column', alignItems:'center', gap:5, opacity:Math.max(0,1-prog(0,200)) }}>
+        <div style={{ marginTop:36, display:'flex', flexDirection:'column', alignItems:'center', gap:5, opacity:Math.max(0,1-p(0,0.2)) }}>
           <div style={{ animation:'hint-sc 1.8s ease-in-out infinite', display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
             <div style={{ fontSize:18 }}>☝️</div>
             <div style={{ width:1, height:20, background:'linear-gradient(to bottom,#8B6914,transparent)' }} />
@@ -416,7 +432,7 @@ function ScrollScene({ onComplete }) {
 
         {/* Progress bar */}
         <div style={{ position:'absolute', bottom:24, left:'50%', transform:'translateX(-50%)', width:80, height:3, background:'rgba(139,105,20,0.12)', borderRadius:2 }}>
-          <div style={{ width:`${Math.min(100,(scrollY/TOTAL_SCROLL)*100)}%`, height:'100%', background:'#8B6914', borderRadius:2 }} />
+          <div style={{ width:`${Math.min(100, progress * 100)}%`, height:'100%', background:'#8B6914', borderRadius:2 }} />
         </div>
         <div style={{ position:'absolute', bottom:38, fontFamily:'Georgia,serif', fontSize:10, color:'#C9A630', letterSpacing:2, opacity:0.6 }}>శుభకార్యానికి స్వాగతం</div>
       </div>
