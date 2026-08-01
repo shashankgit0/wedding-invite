@@ -1,726 +1,713 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const VENUE = "Sri Vinoda Convention, Hyderabad";
 const VENUE_URL = "https://maps.app.goo.gl/Xapm2UzTwXJ5vzgu5";
 
-const events = [
-  { id: "engagement", title: "Engagement", telugu: "నిశ్చితార్థం", date: "June 25, 2026", day: "Thursday", time: "12:30 PM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#8B6914", icon: "💍", photo: "/eng.PNG", photoPos: "center 20%" },
-  { id: "haldi", title: "Haldi Ceremony", telugu: "పసుపు కార్యక్రమం", date: "August 23, 2026", day: "Sunday", time: "12:00 PM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#C97D00", icon: "🍯", photo: "/hal.PNG", photoPos: "center 55%" },
-  { id: "sangeet", title: "Sangeet Night", telugu: "సంగీత్ నైట్", date: "August 23, 2026", day: "Sunday", time: "7:00 PM", type: "Dinner", venue: VENUE, venueUrl: VENUE_URL, color: "#2D6A4F", icon: "🎶", photo: "/san.PNG", photoPos: "center 25%" },
-  { id: "wedding", title: "Wedding", telugu: "వివాహం", date: "August 26, 2026", day: "Wednesday", time: "11:20 AM", type: "Lunch", venue: VENUE, venueUrl: VENUE_URL, color: "#8B1A1A", icon: "💐", photo: "/wed.PNG", photoPos: "center 20%" },
-  { id: "reception", title: "Reception", telugu: "రిసెప్షన్", date: "August 28, 2026", day: "Friday", time: "7:30 PM", type: "Dinner", venue: "Venue TBA", venueUrl: null, color: "#5B2D8E", icon: "🥂", photo: "/rec.PNG", photoPos: "center 25%" },
-];
+// ─── SVG DOODLE LIBRARY ───────────────────────────────────────────────
+const Lotus = ({ size = 60, color = "#C9A630", opacity = 0.7 }) => (
+  <svg width={size} height={size} viewBox="0 0 60 60" style={{ opacity }}>
+    <ellipse cx="30" cy="38" rx="8" ry="14" fill={color} opacity="0.5" transform="rotate(-30 30 38)" />
+    <ellipse cx="30" cy="38" rx="8" ry="14" fill={color} opacity="0.5" transform="rotate(0 30 38)" />
+    <ellipse cx="30" cy="38" rx="8" ry="14" fill={color} opacity="0.5" transform="rotate(30 30 38)" />
+    <ellipse cx="30" cy="38" rx="8" ry="14" fill={color} opacity="0.4" transform="rotate(-60 30 38)" />
+    <ellipse cx="30" cy="38" rx="8" ry="14" fill={color} opacity="0.4" transform="rotate(60 30 38)" />
+    <circle cx="30" cy="34" r="6" fill={color} />
+    <circle cx="30" cy="34" r="3" fill="white" opacity="0.4" />
+  </svg>
+);
 
-// Telugu kolam SVG pattern
-const KolamCorner = ({ size = 120, opacity = 0.12, flip = false }) => (
-  <svg width={size} height={size} viewBox="0 0 120 120" style={{ opacity, transform: flip ? 'scaleX(-1)' : 'none' }}>
-    <circle cx="10" cy="10" r="3" fill="#8B6914"/>
-    <circle cx="30" cy="10" r="2" fill="#8B6914"/>
-    <circle cx="10" cy="30" r="2" fill="#8B6914"/>
-    <circle cx="50" cy="10" r="1.5" fill="#8B6914"/>
-    <circle cx="10" cy="50" r="1.5" fill="#8B6914"/>
-    <circle cx="30" cy="30" r="2.5" fill="#8B6914"/>
-    <circle cx="50" cy="30" r="1.5" fill="#8B6914"/>
-    <circle cx="30" cy="50" r="1.5" fill="#8B6914"/>
-    <circle cx="70" cy="10" r="1" fill="#8B6914"/>
-    <circle cx="10" cy="70" r="1" fill="#8B6914"/>
-    <circle cx="50" cy="50" r="2" fill="#8B6914"/>
-    <circle cx="70" cy="30" r="1" fill="#8B6914"/>
-    <circle cx="30" cy="70" r="1" fill="#8B6914"/>
-    <path d="M10 10 Q30 5 50 10 Q30 15 10 10Z" fill="#8B6914" opacity="0.4"/>
-    <path d="M10 10 Q5 30 10 50 Q15 30 10 10Z" fill="#8B6914" opacity="0.4"/>
-    <path d="M10 10 Q35 35 60 60" stroke="#8B6914" strokeWidth="0.5" fill="none"/>
-    <path d="M30 10 Q40 25 50 40" stroke="#8B6914" strokeWidth="0.5" fill="none"/>
-    <path d="M10 30 Q25 40 40 50" stroke="#8B6914" strokeWidth="0.5" fill="none"/>
-    <path d="M5 5 Q60 5 5 60" stroke="#8B6914" strokeWidth="0.3" fill="none"/>
-    <path d="M15 5 Q80 5 5 75" stroke="#8B6914" strokeWidth="0.2" fill="none"/>
-    {[0,15,30,45,60,75].map(i => (
-      <circle key={i} cx={5+i} cy={5} r="0.8" fill="#C9A630" opacity="0.6"/>
+const Paisley = ({ size = 50, color = "#C9A630", opacity = 0.6 }) => (
+  <svg width={size} height={size} viewBox="0 0 50 50" style={{ opacity }}>
+    <path d="M25 45 Q10 35 12 20 Q14 8 25 10 Q36 8 38 20 Q40 35 25 45Z" fill="none" stroke={color} strokeWidth="1.5" />
+    <path d="M25 40 Q15 32 17 22 Q19 14 25 15 Q31 14 33 22 Q35 32 25 40Z" fill={color} opacity="0.3" />
+    <circle cx="25" cy="18" r="3" fill={color} />
+    <path d="M25 45 Q30 48 35 44" fill="none" stroke={color} strokeWidth="1" />
+  </svg>
+);
+
+const MangoLeaf = ({ size = 40, color = "#2D6A4F", opacity = 0.7 }) => (
+  <svg width={size} height={size * 2} viewBox="0 0 40 80" style={{ opacity }}>
+    <path d="M20 5 Q35 20 35 45 Q35 70 20 75 Q5 70 5 45 Q5 20 20 5Z" fill={color} opacity="0.8" />
+    <line x1="20" y1="5" x2="20" y2="75" stroke="white" strokeWidth="1" opacity="0.4" />
+    {[15,25,35,45,55,65].map(y => (
+      <line key={y} x1="20" y1={y} x2="10" y2={y - 5} stroke="white" strokeWidth="0.5" opacity="0.3" />
     ))}
-    {[0,15,30,45,60,75].map(i => (
-      <circle key={i+10} cx={5} cy={5+i} r="0.8" fill="#C9A630" opacity="0.6"/>
+    {[15,25,35,45,55,65].map(y => (
+      <line key={y + 100} x1="20" y1={y} x2="30" y2={y - 5} stroke="white" strokeWidth="0.5" opacity="0.3" />
     ))}
   </svg>
 );
 
-const MandalaBg = () => (
-  <svg width="300" height="300" viewBox="0 0 300 300" style={{ opacity: 0.06 }}>
-    {[130,110,90,70,50,30].map(r => <circle key={r} cx="150" cy="150" r={r} fill="none" stroke="#8B6914" strokeWidth="0.8"/>)}
-    {[0,22.5,45,67.5,90,112.5,135,157.5].map(a => (
-      <line key={a} x1="150" y1="15" x2="150" y2="285" stroke="#8B6914" strokeWidth="0.4" transform={`rotate(${a} 150 150)`}/>
+const Star = ({ size = 20, color = "#FFD700", opacity = 0.8 }) => (
+  <svg width={size} height={size} viewBox="0 0 20 20" style={{ opacity }}>
+    <polygon points="10,1 12.5,7.5 19,8 14,13 15.5,19.5 10,16 4.5,19.5 6,13 1,8 7.5,7.5" fill={color} />
+  </svg>
+);
+
+const DiamondDivider = ({ color = "#C9A630", width = 200 }) => (
+  <svg width={width} height={20} viewBox={`0 0 ${width} 20`} style={{ opacity: 0.7 }}>
+    <line x1="0" y1="10" x2={width / 2 - 12} y2="10" stroke={color} strokeWidth="0.8" />
+    <polygon points={`${width/2},4 ${width/2+8},10 ${width/2},16 ${width/2-8},10`} fill={color} />
+    <line x1={width / 2 + 12} y1="10" x2={width} y2="10" stroke={color} strokeWidth="0.8" />
+    <circle cx={width/2 - 20} cy={10} r="2" fill={color} />
+    <circle cx={width/2 + 20} cy={10} r="2" fill={color} />
+  </svg>
+);
+
+const Firework = ({ size = 60, color = "#C9A630", opacity = 0.5 }) => (
+  <svg width={size} height={size} viewBox="0 0 60 60" style={{ opacity }}>
+    {[0,30,60,90,120,150,180,210,240,270,300,330].map(a => (
+      <line key={a} x1="30" y1="30"
+        x2={30 + 25 * Math.cos(a * Math.PI / 180)}
+        y2={30 + 25 * Math.sin(a * Math.PI / 180)}
+        stroke={color} strokeWidth="1.5" strokeLinecap="round" />
     ))}
-    {[0,45,90,135,180,225,270,315].map(a => (
-      <path key={a} d="M150 20 Q160 80 150 130 Q140 80 150 20" fill="#8B6914" opacity="0.5" transform={`rotate(${a} 150 150)`}/>
-    ))}
-    {[0,60,120,180,240,300].map(a => (
-      <path key={a} d="M150 50 Q165 100 150 140 Q135 100 150 50" fill="none" stroke="#C9A630" strokeWidth="0.5" transform={`rotate(${a} 150 150)`}/>
+    <circle cx="30" cy="30" r="4" fill={color} />
+  </svg>
+);
+
+const MusicNote = ({ size = 30, color = "#9B59B6", opacity = 0.7 }) => (
+  <svg width={size} height={size} viewBox="0 0 30 30" style={{ opacity }}>
+    <path d="M12 22 L12 8 L24 5 L24 14" fill="none" stroke={color} strokeWidth="1.5" />
+    <circle cx="10" cy="22" r="3" fill={color} />
+    <circle cx="22" cy="14" r="3" fill={color} />
+  </svg>
+);
+
+const Diya = ({ size = 40, color = "#F5A623", opacity = 0.8 }) => (
+  <svg width={size} height={size} viewBox="0 0 40 40" style={{ opacity }}>
+    <path d="M8 28 Q20 32 32 28 Q28 38 20 38 Q12 38 8 28Z" fill={color} opacity="0.7" />
+    <ellipse cx="20" cy="26" rx="12" ry="5" fill={color} />
+    <path d="M20 22 Q18 14 20 8 Q22 14 20 22Z" fill="#FFD700" />
+    <ellipse cx="20" cy="22" rx="3" ry="4" fill="#FF6B00" opacity="0.8" />
+    <circle cx="20" cy="20" r="1.5" fill="#FFD700" />
+  </svg>
+);
+
+const Shehnai = ({ size = 50, color = "#8B6914", opacity = 0.6 }) => (
+  <svg width={size} height={size} viewBox="0 0 50 50" style={{ opacity }}>
+    <path d="M5 25 Q10 20 20 22 Q30 20 45 15" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" />
+    <path d="M45 15 Q50 12 48 18 Q46 24 45 15Z" fill={color} />
+    <circle cx="8" cy="24" r="3" fill={color} />
+    {[12,16,20].map(x => <circle key={x} cx={x} cy={22} r="1.5" fill={color} opacity="0.6" />)}
+  </svg>
+);
+
+const PeacockFeather = ({ size = 80, opacity = 0.5 }) => (
+  <svg width={size} height={size * 1.5} viewBox="0 0 80 120" style={{ opacity }}>
+    <path d="M40 110 Q38 70 40 30 Q42 70 40 110Z" fill="#2D6A4F" />
+    <ellipse cx="40" cy="30" rx="18" ry="25" fill="#1a4f8a" opacity="0.6" />
+    <ellipse cx="40" cy="30" rx="12" ry="18" fill="#2D6A4F" opacity="0.8" />
+    <ellipse cx="40" cy="30" rx="7" ry="11" fill="#C9A630" opacity="0.9" />
+    <circle cx="40" cy="30" r="4" fill="#1a4f8a" />
+    <circle cx="40" cy="30" r="2" fill="#C9A630" />
+  </svg>
+);
+
+const FlowerBorder = ({ color = "#C9A630", width = 300 }) => (
+  <svg width={width} height={30} viewBox={`0 0 ${width} 30`} style={{ opacity: 0.5 }}>
+    {[...Array(Math.floor(width / 30))].map((_, i) => (
+      <g key={i} transform={`translate(${i * 30 + 15}, 15)`}>
+        {[0, 60, 120, 180, 240, 300].map(a => (
+          <ellipse key={a} cx={6 * Math.cos(a * Math.PI / 180)} cy={6 * Math.sin(a * Math.PI / 180)} rx="4" ry="2" fill={color} transform={`rotate(${a})`} />
+        ))}
+        <circle cx="0" cy="0" r="2" fill={color} />
+      </g>
     ))}
   </svg>
 );
 
-function CountdownTimer({ targetDate }) {
-  const [time, setTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+const GoldCorner = ({ size = 100, flip = false, flipV = false, color = "#C9A630" }) => (
+  <svg width={size} height={size} viewBox="0 0 100 100" style={{ opacity: 0.4, transform: `scaleX(${flip ? -1 : 1}) scaleY(${flipV ? -1 : 1})` }}>
+    <path d="M5 5 L40 5 Q45 5 45 10 L45 20 Q45 25 40 25 L20 25 Q15 25 15 30 L15 45 Q15 50 10 50 L5 50 Z" fill="none" stroke={color} strokeWidth="1.5" />
+    <circle cx="5" cy="5" r="3" fill={color} />
+    <path d="M5 5 Q15 5 15 15 Q15 25 25 25 Q35 25 35 35 Q35 45 45 45" fill="none" stroke={color} strokeWidth="0.8" opacity="0.5" />
+    <circle cx="45" cy="45" r="2" fill={color} opacity="0.6" />
+    {[0, 15, 30].map(i => <circle key={i} cx={5 + i * 1.5} cy={5} r="0.8" fill={color} />)}
+    {[0, 15, 30].map(i => <circle key={i + 10} cx={5} cy={5 + i * 1.5} r="0.8" fill={color} />)}
+  </svg>
+);
+
+// ─── COUNTDOWN ────────────────────────────────────────────────────────
+function Countdown({ target, color }) {
+  const [t, setT] = useState({ d: 0, h: 0, m: 0, s: 0 });
   useEffect(() => {
-    const calc = () => {
-      const diff = new Date(targetDate) - new Date();
-      if (diff <= 0) return setTime({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      setTime({
-        days: Math.floor(diff / 86400000),
-        hours: Math.floor((diff % 86400000) / 3600000),
-        minutes: Math.floor((diff % 3600000) / 60000),
-        seconds: Math.floor((diff % 60000) / 1000),
-      });
+    const tick = () => {
+      const diff = new Date(target) - new Date();
+      if (diff <= 0) return;
+      setT({ d: Math.floor(diff / 86400000), h: Math.floor((diff % 86400000) / 3600000), m: Math.floor((diff % 3600000) / 60000), s: Math.floor((diff % 60000) / 1000) });
     };
-    calc();
-    const t = setInterval(calc, 1000);
-    return () => clearInterval(t);
-  }, [targetDate]);
-
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [target]);
   return (
-    <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-      {[['Days', time.days], ['Hours', time.hours], ['Mins', time.minutes], ['Secs', time.seconds]].map(([label, val]) => (
-        <div key={label} style={{
-          background: 'rgba(139,105,20,0.1)', border: '1px solid rgba(139,105,20,0.3)',
-          borderRadius: 10, padding: '10px 14px', minWidth: 62, textAlign: 'center',
-        }}>
-          <div style={{ fontSize: 26, fontFamily: "'Playfair Display', serif", color: '#6B4F00', fontWeight: 700 }}>
-            {String(val).padStart(2, '0')}
-          </div>
-          <div style={{ fontSize: 10, color: '#A0855A', letterSpacing: 2, textTransform: 'uppercase' }}>{label}</div>
+    <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+      {[['Days', t.d], ['Hrs', t.h], ['Min', t.m], ['Sec', t.s]].map(([l, v]) => (
+        <div key={l} style={{ textAlign: 'center', minWidth: 52 }}>
+          <div style={{ fontSize: 28, fontFamily: "'Playfair Display', serif", color, fontWeight: 700, lineHeight: 1 }}>{String(v).padStart(2, '0')}</div>
+          <div style={{ fontSize: 10, color, opacity: 0.6, letterSpacing: 2, textTransform: 'uppercase' }}>{l}</div>
         </div>
       ))}
     </div>
   );
 }
 
-function EventCard({ event, index }) {
-  const [visible, setVisible] = useState(false);
-  const ref = useRef();
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.1 });
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
+// ─── PAGE DEFINITIONS ─────────────────────────────────────────────────
+const pages = [
+  { id: 'cover' },
+  { id: 'sangeet' },
+  { id: 'haldi' },
+  { id: 'wedding' },
+  { id: 'reception' },
+];
 
+// ─── INDIVIDUAL PAGE CONTENT ──────────────────────────────────────────
+
+function CoverPage() {
   return (
-    <div ref={ref} style={{
-      opacity: visible ? 1 : 0,
-      transform: visible ? 'translateY(0)' : 'translateY(30px)',
-      transition: `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`,
-      border: `1px solid ${event.color}30`,
-      borderRadius: 20, overflow: 'hidden',
-      background: '#fff',
-      boxShadow: '0 4px 24px rgba(139,105,20,0.08)',
-    }}>
-      {event.photo && (
-        <div style={{ width:'100%', height:220, position:'relative', overflow:'hidden' }}>
-          <div style={{
-            position:'absolute', inset:0,
-            backgroundImage:`url(${event.photo})`,
-            backgroundSize:'cover', backgroundPosition: event.photoPos || 'center 25%',
-            filter:'blur(0.8px)',
-            transform:'scale(1.02)',
-          }} />
-          {/* Gradient overlay */}
-          <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom,transparent 50%,#fff 100%)' }} />
-          {/* Badge — NOT blurred, sits above */}
-          <div style={{
-            position:'absolute', top:14, left:14,
-            background:'rgba(255,255,255,0.9)', borderRadius:20, padding:'4px 12px',
-            fontSize:11, color:event.color, letterSpacing:2, textTransform:'uppercase',
-            fontFamily:'Georgia,serif', border:`1px solid ${event.color}30`,
-            zIndex:2,
-          }}>{event.type} · {event.type === 'Lunch' ? 'భోజనం' : 'డిన్నర్'}</div>
+    <div style={{ width: '100%', height: '100%', background: 'linear-gradient(160deg, #fdf6e3 0%, #f5e4b0 50%, #faecd0 100%)', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 24px', overflow: 'hidden' }}>
+      {/* Corner decorations */}
+      <div style={{ position: 'absolute', top: 0, left: 0 }}><GoldCorner size={90} /></div>
+      <div style={{ position: 'absolute', top: 0, right: 0 }}><GoldCorner size={90} flip /></div>
+      <div style={{ position: 'absolute', bottom: 0, left: 0 }}><GoldCorner size={90} flipV /></div>
+      <div style={{ position: 'absolute', bottom: 0, right: 0 }}><GoldCorner size={90} flip flipV /></div>
+
+      {/* Scattered doodles */}
+      <div style={{ position: 'absolute', top: 80, left: 16 }}><Paisley size={45} color="#C9A630" opacity={0.3} /></div>
+      <div style={{ position: 'absolute', top: 80, right: 16 }}><Paisley size={45} color="#C9A630" opacity={0.3} /></div>
+      <div style={{ position: 'absolute', bottom: 120, left: 20 }}><Lotus size={50} color="#C97D00" opacity={0.3} /></div>
+      <div style={{ position: 'absolute', bottom: 120, right: 20 }}><Lotus size={50} color="#C97D00" opacity={0.3} /></div>
+      <div style={{ position: 'absolute', top: '50%', left: 8, transform: 'translateY(-50%)' }}><MangoLeaf size={22} color="#8B6914" opacity={0.25} /></div>
+      <div style={{ position: 'absolute', top: '50%', right: 8, transform: 'translateY(-50%) scaleX(-1)' }}><MangoLeaf size={22} color="#8B6914" opacity={0.25} /></div>
+
+      {/* Dot pattern */}
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(139,105,20,0.06) 1px, transparent 1px)', backgroundSize: '22px 22px', pointerEvents: 'none' }} />
+
+      {/* Border frame */}
+      <div style={{ position: 'absolute', inset: 14, border: '1px solid rgba(139,105,20,0.2)', borderRadius: 4, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', inset: 18, border: '0.5px solid rgba(139,105,20,0.12)', borderRadius: 2, pointerEvents: 'none' }} />
+
+      {/* Content */}
+      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 320 }}>
+        <div style={{ fontSize: 11, letterSpacing: 6, color: '#A0855A', textTransform: 'uppercase', marginBottom: 10, fontFamily: 'Georgia, serif' }}>
+          Together with their families
         </div>
-      )}
-      <div style={{ padding: '20px 20px 18px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 14 }}>
-          <div style={{
-            fontSize: 26, width: 50, height: 50, borderRadius: 12,
-            background: `${event.color}10`, border: `1px solid ${event.color}25`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          }}>{event.icon}</div>
-          <div>
-            {!event.photo && <div style={{ fontSize:12, color:event.color, letterSpacing:3, textTransform:'uppercase', marginBottom:3 }}>{event.type} · {event.type === 'Lunch' ? 'భోజనం' : 'డిన్నర్'}</div>}
-            <div style={{ fontSize:30, fontFamily:"'Playfair Display',serif", color:'#2a1500', fontWeight:700, lineHeight:1.1 }}>{event.title}</div>
-            <div style={{ fontSize:16, color:event.color, fontStyle:'italic', marginTop:4 }}>{event.telugu}</div>
+
+        <FlowerBorder color="#C9A630" width={260} />
+
+        <div style={{ margin: '18px 0 4px' }}>
+          <div style={{ fontSize: 'clamp(48px, 13vw, 64px)', fontFamily: "'Playfair Display', serif", fontWeight: 900, lineHeight: 0.95, background: 'linear-gradient(135deg, #6B4F00, #C9A630, #8B6914)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            Srinith
+          </div>
+          <div style={{ fontSize: 15, color: '#A0855A', fontStyle: 'italic', fontFamily: 'Georgia, serif', letterSpacing: 3, margin: '6px 0' }}>— weds —</div>
+          <div style={{ fontSize: 'clamp(48px, 13vw, 64px)', fontFamily: "'Playfair Display', serif", fontWeight: 900, lineHeight: 0.95, background: 'linear-gradient(135deg, #6B4F00, #C9A630, #8B6914)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            Pranathi
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, borderTop: `1px solid ${event.color}12`, paddingTop: 12 }}>
-          <div>
-            <div style={{ fontSize: 11, color: '#bbb', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Date</div>
-            <div style={{ fontSize: 17, color: '#2a1500' }}>{event.date}</div>
-            <div style={{ fontSize: 13, color: event.color }}>{event.day}</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 11, color: '#bbb', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Time</div>
-            <div style={{ fontSize: 17, color: '#2a1500' }}>{event.time}</div>
-          </div>
-          <div style={{ gridColumn: '1 / -1' }}>
-            <div style={{ fontSize: 11, color: '#bbb', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Venue</div>
-            <div style={{ fontSize: 17, color: '#2a1500' }}>{event.venue}</div>
-            {event.venueUrl ? (
-              <a href={event.venueUrl} target="_blank" rel="noopener noreferrer" style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 8,
-                fontSize: 11, color: '#fff', textDecoration: 'none', borderRadius: 20,
-                padding: '5px 12px', background: event.color,
-              }}>📍 Get Directions</a>
-            ) : (
-              <div style={{ fontSize: 11, color: '#bbb', marginTop: 4, fontStyle: 'italic' }}>Venue TBA</div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
-function RSVPForm() {
-  const [form, setForm] = useState({ name: '', phone: '', attending: '', events: [], message: '' });
-  const [submitted, setSubmitted] = useState(false);
+        <DiamondDivider color="#C9A630" width={200} />
 
-  if (submitted) return (
-    <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-      <div style={{ fontSize: 52 }}>🌺</div>
-      <div style={{ fontSize: 22, fontFamily: "'Playfair Display', serif", color: '#6B4F00', marginTop: 12 }}>ధన్యవాదాలు!</div>
-      <div style={{ color: '#A0855A', marginTop: 8 }}>Thank you, {form.name}! We'll see you there.</div>
-    </div>
-  );
-
-  const inputStyle = { width: '100%', background: '#fff', border: '1px solid rgba(139,105,20,0.2)', borderRadius: 10, padding: '12px 16px', color: '#2a1500', fontFamily: 'Georgia, serif', fontSize: 14, outline: 'none', boxSizing: 'border-box' };
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <input style={inputStyle} placeholder="Your full name *" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-      <input style={inputStyle} placeholder="Phone number" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
-      <div style={{ display: 'flex', gap: 10 }}>
-        {['Attending 🎉', "Can't Make It"].map(opt => (
-          <button key={opt} onClick={() => setForm(f => ({ ...f, attending: opt }))} style={{
-            flex: 1, padding: '11px 6px', background: form.attending === opt ? 'rgba(139,105,20,0.12)' : '#fff',
-            border: `1px solid ${form.attending === opt ? '#8B6914' : 'rgba(139,105,20,0.15)'}`,
-            borderRadius: 10, color: form.attending === opt ? '#6B4F00' : '#A0855A',
-            cursor: 'pointer', fontSize: 13, fontFamily: 'Georgia, serif', transition: 'all 0.2s',
-          }}>{opt}</button>
-        ))}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {events.map(ev => (
-          <button key={ev.id} onClick={() => setForm(f => ({ ...f, events: f.events.includes(ev.id) ? f.events.filter(e => e !== ev.id) : [...f.events, ev.id] }))} style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            background: form.events.includes(ev.id) ? `${ev.color}10` : '#fff',
-            border: `1px solid ${form.events.includes(ev.id) ? ev.color : 'rgba(139,105,20,0.12)'}`,
-            borderRadius: 10, padding: '9px 12px', cursor: 'pointer',
-            color: form.events.includes(ev.id) ? ev.color : '#A0855A',
-            fontFamily: 'Georgia, serif', fontSize: 13, textAlign: 'left', transition: 'all 0.2s',
-          }}>
-            <span>{ev.icon}</span><span>{ev.title}</span>
-            <span style={{ marginLeft: 'auto', fontSize: 11, opacity: 0.6 }}>{ev.date}</span>
-          </button>
-        ))}
-      </div>
-      <textarea style={{ ...inputStyle, minHeight: 70, resize: 'vertical' }} placeholder="Message for the couple..." value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} />
-      <button onClick={() => { if (form.name && form.attending) setSubmitted(true); }} style={{
-        background: 'linear-gradient(135deg, #8B6914, #C9A630)', border: 'none', borderRadius: 10,
-        padding: '15px', color: '#fff', fontFamily: "'Playfair Display', serif",
-        fontSize: 16, fontWeight: 700, cursor: 'pointer', letterSpacing: 1,
-        boxShadow: '0 4px 20px rgba(139,105,20,0.25)',
-      }}>Confirm RSVP ✨</button>
-    </div>
-  );
-}
-
-// THE SCROLL SCENE — Apple style
-function ScrollScene({ onComplete }) {
-  const [progress, setProgress] = useState(0); // 0 to 1
-  const progressRef = useRef(0);
-  const completedRef = useRef(false);
-  const animFrameRef = useRef(null);
-  const targetRef = useRef(0);
-  const touchStartY = useRef(null);
-
-  // Smoothly animate progress toward target (lerp)
-  useEffect(() => {
-    const animate = () => {
-      const current = progressRef.current;
-      const target = targetRef.current;
-      const diff = target - current;
-      if (Math.abs(diff) > 0.0005) {
-        const next = current + diff * 0.08;
-        progressRef.current = next;
-        setProgress(next);
-      }
-      animFrameRef.current = requestAnimationFrame(animate);
-    };
-    animFrameRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animFrameRef.current);
-  }, []);
-
-  const addDelta = (delta) => {
-    if (completedRef.current) return;
-    targetRef.current = Math.max(0, Math.min(1, targetRef.current + delta));
-    if (targetRef.current >= 0.98 && !completedRef.current) {
-      completedRef.current = true;
-      setTimeout(onComplete, 300);
-    }
-  };
-
-  useEffect(() => {
-    // Mouse wheel + trackpad — window level so browser can't intercept
-    const handleWheel = (e) => {
-      e.preventDefault();
-      addDelta(e.deltaY / 800);
-    };
-
-    // Touch
-    const handleTouchStart = (e) => { touchStartY.current = e.touches[0].clientY; };
-    const handleTouchMove = (e) => {
-      if (touchStartY.current === null) return;
-      const dy = touchStartY.current - e.touches[0].clientY;
-      touchStartY.current = e.touches[0].clientY;
-      addDelta(dy / 400);
-    };
-    const handleTouchEnd = () => { touchStartY.current = null; };
-
-    // Keyboard
-    const handleKey = (e) => {
-      if (['ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); addDelta(0.08); }
-      if (['ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); addDelta(-0.08); }
-    };
-
-    window.addEventListener('wheel', handleWheel, { passive: false });
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchmove', handleTouchMove, { passive: true });
-    window.addEventListener('touchend', handleTouchEnd);
-    window.addEventListener('keydown', handleKey);
-
-    return () => {
-      window.removeEventListener('wheel', handleWheel);
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEnd);
-      window.removeEventListener('keydown', handleKey);
-    };
-  }, []);
-
-  // Map progress ranges to animation values
-  const p = (start, end) => Math.max(0, Math.min(1, (progress - start) / (end - start)));
-
-  const flipAngle   = p(0, 0.35) * 180;
-  const flapAngle   = p(0.35, 0.65) * 180;
-  const letterY     = -(p(0.62, 0.88) * 160);
-  const letterOpacity = p(0.60, 0.72);
-  const letterScale = 0.82 + p(0.62, 0.88) * 0.18;
-  const sealOpacity = Math.max(0, 1 - p(0.35, 0.50));
-  const sceneOpacity = 1 - p(0.88, 1.0);
-  const sceneScale  = 1 + p(0.85, 1.0) * 0.3;
-
-  const prog = (start, end) => Math.max(0, Math.min(1, (scrollY - start) / (end - start)));
-
-  return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 1000 }}>
-      <style>{`
-        @keyframes float-env2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-        @keyframes petal-sc { 0%{transform:translateY(-10px) rotate(0deg);opacity:0} 10%{opacity:0.8} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
-        @keyframes shimmer-sc { 0%{background-position:-200% center} 100%{background-position:200% center} }
-        @keyframes hint-sc { 0%,100%{opacity:0.5;transform:translateY(0)} 50%{opacity:1;transform:translateY(-6px)} }
-        @keyframes rotate-mandala { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        .shimmer-env2 { background: linear-gradient(90deg,#6B4F00,#C9A630,#8B6914,#C9A630,#6B4F00); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:shimmer-sc 3s linear infinite; }
-      `}</style>
-
-      {/* Fixed visual */}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg,#fdf8e8 0%,#f5e4a8 40%,#faecd0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', opacity: sceneOpacity, transform: `scale(${sceneScale})`, transformOrigin: 'center center' }}>
-
-        {/* Kolam corners */}
-        <div style={{ position:'absolute', top:0, left:0, pointerEvents:'none' }}><KolamCorner size={140} opacity={0.15} /></div>
-        <div style={{ position:'absolute', top:0, right:0, pointerEvents:'none' }}><KolamCorner size={140} opacity={0.15} flip /></div>
-        <div style={{ position:'absolute', bottom:0, left:0, pointerEvents:'none', transform:'scaleY(-1)' }}><KolamCorner size={140} opacity={0.15} /></div>
-        <div style={{ position:'absolute', bottom:0, right:0, pointerEvents:'none', transform:'scale(-1)' }}><KolamCorner size={140} opacity={0.15} /></div>
-
-        {/* Mandala */}
-        <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', animation:'rotate-mandala 60s linear infinite', pointerEvents:'none' }}><MandalaBg /></div>
-
-        {/* Dot bg */}
-        <div style={{ position:'absolute', inset:0, pointerEvents:'none', backgroundImage:'radial-gradient(circle,rgba(139,105,20,0.07) 1px,transparent 1px)', backgroundSize:'28px 28px' }} />
-
-        {/* Frame */}
-        <div style={{ position:'absolute', inset:16, border:'1px solid rgba(139,105,20,0.12)', borderRadius:20, pointerEvents:'none' }} />
-
-        {/* Petals */}
-        {[...Array(5)].map((_,i) => (
-          <div key={i} style={{ position:'absolute', left:`${10+i*18}%`, top:'-20px', fontSize:13, pointerEvents:'none', animation:`petal-sc ${8+i*1.5}s linear infinite`, animationDelay:`${i*1.5}s` }}>🌸</div>
-        ))}
-
-        {/* Toran */}
-        <div style={{ position:'absolute', top:30, left:'50%', transform:'translateX(-50%)', display:'flex', gap:6, pointerEvents:'none', opacity:Math.max(0,1-p(0,0.2)) }}>
-          {['🌿','🍃','🌸','🍃','🌸','🍃','🌿'].map((e,i) => <span key={i} style={{ fontSize:12, opacity:0.6 }}>{e}</span>)}
+        <div style={{ margin: '14px 0', fontSize: 11, color: '#8B6914', letterSpacing: 2, fontFamily: 'Georgia, serif' }}>
+          శుభ వివాహం · August 2026 · Hyderabad
         </div>
 
-        {/* Label */}
-        <div style={{ fontSize:10, letterSpacing:5, color:'#A0855A', textTransform:'uppercase', marginBottom:24, fontFamily:'Georgia,serif', opacity:Math.max(0,1-p(0,0.3)), transform:`translateY(${-p(0,0.3)*20}px)` }}>
-          You are cordially invited
-        </div>
-
-        {/* ENVELOPE — 3D flip container */}
-        <div style={{ position:'relative', width:300, height:200, perspective:'900px', animation:scrollY < 20 ? 'float-env2 3s ease-in-out infinite' : 'none' }}>
-
-          {/* Flipper */}
-          <div style={{ position:'relative', width:'100%', height:'100%', transformStyle:'preserve-3d', transform:`rotateY(${flipAngle}deg)` }}>
-
-            {/* FRONT — names only, no flap */}
-            <div style={{ position:'absolute', inset:0, background:'linear-gradient(145deg,#fffbec,#f5e098)', border:'1.5px solid rgba(139,105,20,0.45)', borderRadius:10, boxShadow:'0 12px 50px rgba(139,105,20,0.18)', backfaceVisibility:'hidden', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
-              <div style={{ position:'absolute', inset:5, border:'1px solid rgba(139,105,20,0.1)', borderRadius:6 }} />
-              <div style={{ position:'absolute', bottom:0, left:0, width:0, height:0, borderLeft:'150px solid rgba(139,105,20,0.05)', borderTop:'100px solid transparent' }} />
-              <div style={{ position:'absolute', bottom:0, right:0, width:0, height:0, borderRight:'150px solid rgba(139,105,20,0.05)', borderTop:'100px solid transparent' }} />
-              <div style={{ fontSize:9, letterSpacing:3, color:'#A0855A', textTransform:'uppercase', marginBottom:10, fontFamily:'Georgia,serif' }}>#SrinithWedsPranathi</div>
-              <div style={{ fontFamily:"'Playfair Display',serif", fontWeight:900, fontSize:30, lineHeight:1 }} className="shimmer-env2">Srinith</div>
-              <div style={{ fontSize:12, color:'#A0855A', fontStyle:'italic', margin:'5px 0', fontFamily:'Georgia,serif', letterSpacing:2 }}>— weds —</div>
-              <div style={{ fontFamily:"'Playfair Display',serif", fontWeight:900, fontSize:30, lineHeight:1 }} className="shimmer-env2">Pranathi</div>
-              <div style={{ fontSize:9, color:'#C9A630', marginTop:10, letterSpacing:1, fontFamily:'Georgia,serif' }}>August 2026 · Hyderabad</div>
+        <div style={{ background: 'rgba(139,105,20,0.08)', border: '1px solid rgba(139,105,20,0.2)', borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
+          <div style={{ fontSize: 9, letterSpacing: 2, color: '#A0855A', textTransform: 'uppercase', marginBottom: 8 }}>Blessed by</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 6, alignItems: 'center' }}>
+            <div style={{ textAlign: 'right', fontSize: 11, color: '#2a1500', fontFamily: 'Georgia, serif', lineHeight: 1.5 }}>
+              <div style={{ fontSize: 9, color: '#8B6914', marginBottom: 2 }}>Groom's Family</div>
+              [Name] &<br />Smt. Vijaya
             </div>
+            <div style={{ color: '#C9A630', fontSize: 12, opacity: 0.5 }}>✦</div>
+            <div style={{ textAlign: 'left', fontSize: 11, color: '#2a1500', fontFamily: 'Georgia, serif', lineHeight: 1.5 }}>
+              <div style={{ fontSize: 9, color: '#8B6914', marginBottom: 2 }}>Bride's Family</div>
+              Sri. Sridhar Reddy &<br />Smt. Sunitha
+            </div>
+          </div>
+        </div>
 
-            {/* BACK — no text, flap opens, letter rises */}
-            <div style={{ position:'absolute', inset:0, background:'linear-gradient(145deg,#fffbec,#f5e098)', border:'1.5px solid rgba(139,105,20,0.45)', borderRadius:10, boxShadow:'0 12px 50px rgba(139,105,20,0.18)', backfaceVisibility:'hidden', transform:'rotateY(180deg)', overflow:'hidden' }}>
-              <div style={{ position:'absolute', inset:5, border:'1px solid rgba(139,105,20,0.1)', borderRadius:6 }} />
-              <div style={{ position:'absolute', bottom:0, left:0, width:0, height:0, borderLeft:'150px solid rgba(139,105,20,0.06)', borderTop:'100px solid transparent' }} />
-              <div style={{ position:'absolute', bottom:0, right:0, width:0, height:0, borderRight:'150px solid rgba(139,105,20,0.06)', borderTop:'100px solid transparent' }} />
+        <Countdown target="2026-08-26T11:20:00" color="#8B6914" />
 
-              {/* Flap */}
-              <div style={{ position:'absolute', top:0, left:0, right:0, height:120, transformOrigin:'top center', transform:`perspective(600px) rotateX(${-flapAngle}deg)`, clipPath:'polygon(0 0,100% 0,50% 88%)', background:'linear-gradient(175deg,#e8c84a,#c9a020)', borderBottom:'1px solid rgba(139,105,20,0.25)', zIndex:3 }} />
+        <div style={{ marginTop: 16, fontSize: 10, color: '#C9A630', letterSpacing: 3, fontFamily: 'Georgia, serif' }}>
+          Swipe to explore →
+        </div>
+      </div>
+    </div>
+  );
+}
 
-              {/* Letter */}
-              <div style={{ position:'absolute', bottom:8, left:18, right:18, background:'linear-gradient(180deg,#fffef8,#fdf5d8)', borderRadius:'6px 6px 4px 4px', padding:'14px 16px', boxShadow:'0 -6px 24px rgba(139,105,20,0.12)', transform:`translateY(${letterY}px) scale(${letterScale})`, opacity:letterOpacity, zIndex:2, border:'1px solid rgba(139,105,20,0.2)', textAlign:'center' }}>
-                <div style={{ position:'absolute', top:4, right:6, opacity:0.1 }}><KolamCorner size={40} opacity={1} /></div>
-                <div style={{ position:'absolute', top:4, left:6, opacity:0.1 }}><KolamCorner size={40} opacity={1} flip /></div>
-                <div style={{ fontSize:8, letterSpacing:3, color:'#A0855A', textTransform:'uppercase', marginBottom:6, fontFamily:'Georgia,serif' }}>With Joyful Hearts</div>
-                <div style={{ display:'flex', alignItems:'center', gap:6, justifyContent:'center', marginBottom:4 }}>
-                  <div style={{ height:1, width:18, background:'rgba(139,105,20,0.3)' }} /><span style={{ fontSize:10 }}>🌺</span><div style={{ height:1, width:18, background:'rgba(139,105,20,0.3)' }} />
-                </div>
-                <div style={{ fontFamily:"'Playfair Display',serif", color:'#2a1500', fontSize:17, fontWeight:700 }}>Srinith</div>
-                <div style={{ fontSize:10, fontStyle:'italic', color:'#8B6914', fontFamily:'Georgia,serif', margin:'2px 0' }}>weds</div>
-                <div style={{ fontFamily:"'Playfair Display',serif", color:'#2a1500', fontSize:17, fontWeight:700 }}>Pranathi</div>
-                <div style={{ fontSize:8, color:'#C9A630', marginTop:6, letterSpacing:1, fontFamily:'Georgia,serif' }}>August 2026 · Sri Vinoda Convention · Hyderabad</div>
+function SangeetPage() {
+  return (
+    <div style={{ width: '100%', height: '100%', background: 'linear-gradient(160deg, #0d0015 0%, #1a0030 40%, #0a001a 100%)', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 24px', overflow: 'hidden' }}>
+      {/* Purple gradient blobs */}
+      <div style={{ position: 'absolute', top: -60, left: -60, width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(155,89,182,0.3) 0%, transparent 70%)', filter: 'blur(30px)' }} />
+      <div style={{ position: 'absolute', bottom: -40, right: -40, width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(142,68,173,0.25) 0%, transparent 70%)', filter: 'blur(30px)' }} />
+
+      {/* Corner decorations */}
+      <div style={{ position: 'absolute', top: 0, left: 0 }}><GoldCorner size={80} color="#9B59B6" /></div>
+      <div style={{ position: 'absolute', top: 0, right: 0 }}><GoldCorner size={80} flip color="#9B59B6" /></div>
+      <div style={{ position: 'absolute', bottom: 0, left: 0 }}><GoldCorner size={80} flipV color="#9B59B6" /></div>
+      <div style={{ position: 'absolute', bottom: 0, right: 0 }}><GoldCorner size={80} flip flipV color="#9B59B6" /></div>
+
+      {/* Doodles */}
+      <div style={{ position: 'absolute', top: 70, left: 12 }}><MusicNote size={28} color="#C39BD3" opacity={0.5} /></div>
+      <div style={{ position: 'absolute', top: 100, right: 14 }}><MusicNote size={22} color="#A569BD" opacity={0.4} /></div>
+      <div style={{ position: 'absolute', top: 140, left: 30 }}><MusicNote size={18} color="#C39BD3" opacity={0.3} /></div>
+      <div style={{ position: 'absolute', bottom: 160, left: 14 }}><Firework size={50} color="#9B59B6" opacity={0.3} /></div>
+      <div style={{ position: 'absolute', bottom: 130, right: 12 }}><Firework size={40} color="#C39BD3" opacity={0.25} /></div>
+      <div style={{ position: 'absolute', top: '45%', left: 10 }}><Shehnai size={40} color="#9B59B6" opacity={0.35} /></div>
+      <div style={{ position: 'absolute', top: '55%', right: 10, transform: 'scaleX(-1)' }}><Shehnai size={35} color="#C39BD3" opacity={0.3} /></div>
+      {/* Stars scattered */}
+      {[[20, 20], [85, 35], [60, 15], [15, 60], [90, 65], [50, 75], [25, 80], [75, 80]].map(([x, y], i) => (
+        <div key={i} style={{ position: 'absolute', left: `${x}%`, top: `${y}%` }}><Star size={8 + (i % 3) * 4} color="#C39BD3" opacity={0.3 + (i % 3) * 0.15} /></div>
+      ))}
+
+      {/* Border frame */}
+      <div style={{ position: 'absolute', inset: 14, border: '1px solid rgba(155,89,182,0.3)', borderRadius: 4, pointerEvents: 'none' }} />
+
+      {/* Content */}
+      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 320 }}>
+        <div style={{ fontSize: 28, marginBottom: 6 }}>🎶</div>
+        <div style={{ fontSize: 10, letterSpacing: 5, color: '#C39BD3', textTransform: 'uppercase', marginBottom: 8, fontFamily: 'Georgia, serif' }}>
+          An Evening of Music
+        </div>
+
+        <DiamondDivider color="#9B59B6" width={180} />
+
+        <div style={{ margin: '14px 0 8px' }}>
+          <div style={{ fontSize: 38, fontFamily: "'Playfair Display', serif", fontWeight: 900, color: '#fff', lineHeight: 1 }}>Sangeet</div>
+          <div style={{ fontSize: 20, fontFamily: "'Playfair Display', serif", color: '#C39BD3', fontStyle: 'italic', lineHeight: 1.2 }}>Night</div>
+        </div>
+        <div style={{ fontSize: 13, color: '#9B59B6', fontFamily: 'Georgia, serif', fontStyle: 'italic', marginBottom: 16 }}>సంగీత్ నైట్</div>
+
+        <FlowerBorder color="#9B59B6" width={240} />
+
+        <div style={{ margin: '18px 0', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ background: 'rgba(155,89,182,0.15)', border: '1px solid rgba(155,89,182,0.3)', borderRadius: 10, padding: '12px 16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 9, color: '#9B59B6', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Date</div>
+                <div style={{ fontSize: 15, color: '#fff', fontFamily: 'Georgia, serif' }}>August 23, 2026</div>
+                <div style={{ fontSize: 11, color: '#C39BD3' }}>Sunday</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 9, color: '#9B59B6', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Time</div>
+                <div style={{ fontSize: 15, color: '#fff', fontFamily: 'Georgia, serif' }}>7:00 PM</div>
+                <div style={{ fontSize: 11, color: '#C39BD3' }}>విందు · Dinner</div>
               </div>
             </div>
-          </div>
-
-          {/* Wax seal — on BACK face only, drops off as flap opens */}
-          <div style={{
-            position:'absolute', top:'42%', left:'50%',
-            transform:`translate(-50%,-50%) rotateY(${flipAngle < 90 ? 0 : 180}deg)`,
-            width:52, height:52, borderRadius:'50%',
-            background:'radial-gradient(circle at 35% 35%,#C41E3A,#6b0f0f)',
-            border:'2px solid rgba(201,160,32,0.9)',
-            display:'flex', alignItems:'center', justifyContent:'center',
-            zIndex:10,
-            boxShadow:'0 4px 14px rgba(139,26,26,0.5)',
-            opacity: flipAngle < 90 ? 0 : sealOpacity,
-            pointerEvents:'none',
-          }}>
-            <div style={{ fontFamily:"'Playfair Display',serif", color:'#D4A017', fontSize:11, fontWeight:700, textAlign:'center', lineHeight:1.2, transform:'rotateY(180deg)' }}>S<br/><span style={{fontSize:7}}>✦</span><br/>P</div>
+            <div style={{ marginTop: 10, borderTop: '1px solid rgba(155,89,182,0.2)', paddingTop: 10 }}>
+              <div style={{ fontSize: 9, color: '#9B59B6', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Venue</div>
+              <div style={{ fontSize: 14, color: '#fff', fontFamily: 'Georgia, serif' }}>{VENUE}</div>
+              <a href={VENUE_URL} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: 8, fontSize: 11, color: '#C39BD3', textDecoration: 'none', border: '1px solid rgba(155,89,182,0.4)', borderRadius: 16, padding: '4px 12px' }}>📍 Directions</a>
+            </div>
           </div>
         </div>
 
-        {/* Hint */}
-        <div style={{ marginTop:36, display:'flex', flexDirection:'column', alignItems:'center', gap:5, opacity:Math.max(0,1-p(0,0.2)) }}>
-          <div style={{ animation:'hint-sc 1.8s ease-in-out infinite', display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
-            <div style={{ fontSize:18 }}>☝️</div>
-            <div style={{ width:1, height:20, background:'linear-gradient(to bottom,#8B6914,transparent)' }} />
-          </div>
-          <div style={{ fontFamily:'Georgia,serif', fontSize:12, color:'#8B6914', letterSpacing:3, textTransform:'uppercase' }}>Scroll to Open</div>
-          <div style={{ fontFamily:'Georgia,serif', fontSize:11, color:'#C9A630', fontStyle:'italic' }}>శుభ వివాహం</div>
+        <div style={{ fontSize: 13, color: '#C39BD3', fontStyle: 'italic', fontFamily: 'Georgia, serif', opacity: 0.7 }}>
+          "Dance like nobody's watching"
         </div>
-
-        {/* Progress bar */}
-        <div style={{ position:'absolute', bottom:24, left:'50%', transform:'translateX(-50%)', width:80, height:3, background:'rgba(139,105,20,0.12)', borderRadius:2 }}>
-          <div style={{ width:`${Math.min(100, progress * 100)}%`, height:'100%', background:'#8B6914', borderRadius:2 }} />
-        </div>
-        <div style={{ position:'absolute', bottom:38, fontFamily:'Georgia,serif', fontSize:10, color:'#C9A630', letterSpacing:2, opacity:0.6 }}>శుభకార్యానికి స్వాగతం</div>
       </div>
     </div>
   );
 }
 
-export default function WeddingInvite() {
-  const [phase, setPhase] = useState('envelope'); // 'envelope' | 'fading' | 'invite'
-  const [heroVisible, setHeroVisible] = useState(false);
-  const [activeSection, setActiveSection] = useState('home');
-  const mainRef = useRef();
+function HaldiPage() {
+  return (
+    <div style={{ width: '100%', height: '100%', background: 'linear-gradient(160deg, #fdf3c0 0%, #f9e04a 30%, #f5cc00 60%, #fdf3c0 100%)', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 24px', overflow: 'hidden' }}>
+      {/* Yellow glow */}
+      <div style={{ position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%,-50%)', width: 280, height: 280, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,220,0,0.4) 0%, transparent 70%)', filter: 'blur(40px)' }} />
 
-  const handleComplete = () => {
-    setPhase('invite');
-    setTimeout(() => setHeroVisible(true), 400);
+      {/* Corner decorations */}
+      <div style={{ position: 'absolute', top: 0, left: 0 }}><GoldCorner size={80} color="#8B6914" /></div>
+      <div style={{ position: 'absolute', top: 0, right: 0 }}><GoldCorner size={80} flip color="#8B6914" /></div>
+      <div style={{ position: 'absolute', bottom: 0, left: 0 }}><GoldCorner size={80} flipV color="#8B6914" /></div>
+      <div style={{ position: 'absolute', bottom: 0, right: 0 }}><GoldCorner size={80} flip flipV color="#8B6914" /></div>
+
+      {/* Doodles */}
+      <div style={{ position: 'absolute', top: 65, left: 8 }}><Diya size={40} opacity={0.7} /></div>
+      <div style={{ position: 'absolute', top: 65, right: 8 }}><Diya size={40} opacity={0.7} /></div>
+      <div style={{ position: 'absolute', bottom: 90, left: 10 }}><Lotus size={55} color="#C97D00" opacity={0.4} /></div>
+      <div style={{ position: 'absolute', bottom: 90, right: 10 }}><Lotus size={55} color="#C97D00" opacity={0.4} /></div>
+      <div style={{ position: 'absolute', top: '45%', left: 6, transform: 'translateY(-50%)' }}><MangoLeaf size={24} color="#8B6914" opacity={0.4} /></div>
+      <div style={{ position: 'absolute', top: '45%', right: 6, transform: 'translateY(-50%) scaleX(-1)' }}><MangoLeaf size={24} color="#8B6914" opacity={0.4} /></div>
+      {/* Paisley scatters */}
+      <div style={{ position: 'absolute', top: 110, left: 20 }}><Paisley size={30} color="#C97D00" opacity={0.3} /></div>
+      <div style={{ position: 'absolute', top: 110, right: 20 }}><Paisley size={30} color="#C97D00" opacity={0.3} /></div>
+      <div style={{ position: 'absolute', bottom: 160, left: 18 }}><Paisley size={25} color="#8B6914" opacity={0.25} /></div>
+      {/* Dot pattern */}
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(139,105,20,0.08) 1px, transparent 1px)', backgroundSize: '20px 20px', pointerEvents: 'none' }} />
+
+      <div style={{ position: 'absolute', inset: 14, border: '1px solid rgba(139,105,20,0.3)', borderRadius: 4, pointerEvents: 'none' }} />
+
+      {/* Content */}
+      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 320 }}>
+        <div style={{ fontSize: 28, marginBottom: 6 }}>🍯</div>
+        <div style={{ fontSize: 10, letterSpacing: 5, color: '#8B6914', textTransform: 'uppercase', marginBottom: 8, fontFamily: 'Georgia, serif' }}>
+          Blessings & Turmeric
+        </div>
+
+        <DiamondDivider color="#C97D00" width={180} />
+
+        <div style={{ margin: '14px 0 8px' }}>
+          <div style={{ fontSize: 42, fontFamily: "'Playfair Display', serif", fontWeight: 900, color: '#4a3000', lineHeight: 1 }}>Haldi</div>
+          <div style={{ fontSize: 16, fontFamily: "'Playfair Display', serif", color: '#8B6914', fontStyle: 'italic' }}>Ceremony</div>
+        </div>
+        <div style={{ fontSize: 13, color: '#C97D00', fontFamily: 'Georgia, serif', fontStyle: 'italic', marginBottom: 16 }}>పసుపు కార్యక్రమం</div>
+
+        <FlowerBorder color="#C97D00" width={240} />
+
+        <div style={{ margin: '18px 0' }}>
+          <div style={{ background: 'rgba(139,105,20,0.12)', border: '1px solid rgba(139,105,20,0.25)', borderRadius: 10, padding: '12px 16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 9, color: '#8B6914', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Date</div>
+                <div style={{ fontSize: 15, color: '#3a2000', fontFamily: 'Georgia, serif' }}>August 23, 2026</div>
+                <div style={{ fontSize: 11, color: '#C97D00' }}>Sunday</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 9, color: '#8B6914', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Time</div>
+                <div style={{ fontSize: 15, color: '#3a2000', fontFamily: 'Georgia, serif' }}>12:00 PM</div>
+                <div style={{ fontSize: 11, color: '#C97D00' }}>భోజనం · Lunch</div>
+              </div>
+            </div>
+            <div style={{ marginTop: 10, borderTop: '1px solid rgba(139,105,20,0.15)', paddingTop: 10 }}>
+              <div style={{ fontSize: 9, color: '#8B6914', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Venue</div>
+              <div style={{ fontSize: 14, color: '#3a2000', fontFamily: 'Georgia, serif' }}>{VENUE}</div>
+              <a href={VENUE_URL} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: 8, fontSize: 11, color: '#8B6914', textDecoration: 'none', border: '1px solid rgba(139,105,20,0.35)', borderRadius: 16, padding: '4px 12px' }}>📍 Directions</a>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ fontSize: 13, color: '#8B6914', fontStyle: 'italic', fontFamily: 'Georgia, serif', opacity: 0.8 }}>
+          "Glow like turmeric, shine like gold"
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WeddingPage() {
+  return (
+    <div style={{ width: '100%', height: '100%', background: 'linear-gradient(160deg, #1a0800 0%, #2d1200 40%, #1a0800 100%)', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 24px', overflow: 'hidden' }}>
+      {/* Gold glow */}
+      <div style={{ position: 'absolute', top: '40%', left: '50%', transform: 'translate(-50%,-50%)', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(201,166,48,0.15) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+
+      {/* Corner decorations */}
+      <div style={{ position: 'absolute', top: 0, left: 0 }}><GoldCorner size={90} color="#C9A630" /></div>
+      <div style={{ position: 'absolute', top: 0, right: 0 }}><GoldCorner size={90} flip color="#C9A630" /></div>
+      <div style={{ position: 'absolute', bottom: 0, left: 0 }}><GoldCorner size={90} flipV color="#C9A630" /></div>
+      <div style={{ position: 'absolute', bottom: 0, right: 0 }}><GoldCorner size={90} flip flipV color="#C9A630" /></div>
+
+      {/* Doodles */}
+      <div style={{ position: 'absolute', top: 65, left: 10 }}><Lotus size={50} color="#C9A630" opacity={0.35} /></div>
+      <div style={{ position: 'absolute', top: 65, right: 10 }}><Lotus size={50} color="#C9A630" opacity={0.35} /></div>
+      <div style={{ position: 'absolute', bottom: 100, left: 8 }}><PeacockFeather size={55} opacity={0.25} /></div>
+      <div style={{ position: 'absolute', bottom: 100, right: 8, transform: 'scaleX(-1)' }}><PeacockFeather size={55} opacity={0.25} /></div>
+      <div style={{ position: 'absolute', top: '48%', left: 8, transform: 'translateY(-50%)' }}><Diya size={35} color="#C9A630" opacity={0.5} /></div>
+      <div style={{ position: 'absolute', top: '48%', right: 8, transform: 'translateY(-50%)' }}><Diya size={35} color="#C9A630" opacity={0.5} /></div>
+      {/* Stars */}
+      {[[10, 25], [88, 30], [15, 70], [85, 68], [50, 10], [5, 48], [95, 50]].map(([x, y], i) => (
+        <div key={i} style={{ position: 'absolute', left: `${x}%`, top: `${y}%` }}><Star size={6 + i * 2} color="#C9A630" opacity={0.2 + i * 0.05} /></div>
+      ))}
+      {/* Paisley */}
+      <div style={{ position: 'absolute', top: 115, left: 18 }}><Paisley size={35} color="#C9A630" opacity={0.2} /></div>
+      <div style={{ position: 'absolute', top: 115, right: 18 }}><Paisley size={35} color="#C9A630" opacity={0.2} /></div>
+
+      {/* Gold border */}
+      <div style={{ position: 'absolute', inset: 14, border: '1px solid rgba(201,166,48,0.3)', borderRadius: 4, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', inset: 18, border: '0.5px solid rgba(201,166,48,0.15)', borderRadius: 2, pointerEvents: 'none' }} />
+
+      {/* Content */}
+      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 320 }}>
+        <div style={{ fontSize: 28, marginBottom: 6 }}>💐</div>
+        <div style={{ fontSize: 10, letterSpacing: 5, color: '#C9A630', textTransform: 'uppercase', marginBottom: 8, fontFamily: 'Georgia, serif' }}>
+          The Grand Union
+        </div>
+
+        <DiamondDivider color="#C9A630" width={200} />
+
+        <div style={{ margin: '14px 0 8px' }}>
+          <div style={{ fontSize: 48, fontFamily: "'Playfair Display', serif", fontWeight: 900, lineHeight: 1, background: 'linear-gradient(135deg, #C9A630, #FFD700, #C9A630)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            Wedding
+          </div>
+        </div>
+        <div style={{ fontSize: 13, color: '#C9A630', fontFamily: 'Georgia, serif', fontStyle: 'italic', marginBottom: 16 }}>వివాహం</div>
+
+        <FlowerBorder color="#C9A630" width={260} />
+
+        <div style={{ margin: '16px 0' }}>
+          <div style={{ background: 'rgba(201,166,48,0.08)', border: '1px solid rgba(201,166,48,0.25)', borderRadius: 10, padding: '14px 16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 9, color: '#C9A630', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Date</div>
+                <div style={{ fontSize: 15, color: '#fff', fontFamily: 'Georgia, serif' }}>August 26, 2026</div>
+                <div style={{ fontSize: 11, color: '#C9A630' }}>Wednesday</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 9, color: '#C9A630', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Time</div>
+                <div style={{ fontSize: 15, color: '#fff', fontFamily: 'Georgia, serif' }}>11:20 AM</div>
+                <div style={{ fontSize: 11, color: '#C9A630' }}>భోజనం · Lunch</div>
+              </div>
+            </div>
+            <div style={{ marginTop: 10, borderTop: '1px solid rgba(201,166,48,0.15)', paddingTop: 10 }}>
+              <div style={{ fontSize: 9, color: '#C9A630', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Venue</div>
+              <div style={{ fontSize: 14, color: '#fff', fontFamily: 'Georgia, serif' }}>{VENUE}</div>
+              <a href={VENUE_URL} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: 8, fontSize: 11, color: '#C9A630', textDecoration: 'none', border: '1px solid rgba(201,166,48,0.3)', borderRadius: 16, padding: '4px 12px' }}>📍 Directions</a>
+            </div>
+          </div>
+        </div>
+
+        <Countdown target="2026-08-26T11:20:00" color="#C9A630" />
+      </div>
+    </div>
+  );
+}
+
+function ReceptionPage() {
+  return (
+    <div style={{ width: '100%', height: '100%', background: 'linear-gradient(160deg, #050505 0%, #111111 40%, #0a0a0a 100%)', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 24px', overflow: 'hidden' }}>
+      {/* Glossy light effects */}
+      <div style={{ position: 'absolute', top: -80, left: '30%', width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%)', filter: 'blur(20px)' }} />
+      <div style={{ position: 'absolute', bottom: -60, right: '20%', width: 180, height: 180, borderRadius: '50%', background: 'radial-gradient(circle, rgba(200,200,255,0.04) 0%, transparent 70%)', filter: 'blur(25px)' }} />
+
+      {/* Corner decorations */}
+      <div style={{ position: 'absolute', top: 0, left: 0 }}><GoldCorner size={80} color="#888" /></div>
+      <div style={{ position: 'absolute', top: 0, right: 0 }}><GoldCorner size={80} flip color="#888" /></div>
+      <div style={{ position: 'absolute', bottom: 0, left: 0 }}><GoldCorner size={80} flipV color="#888" /></div>
+      <div style={{ position: 'absolute', bottom: 0, right: 0 }}><GoldCorner size={80} flip flipV color="#888" /></div>
+
+      {/* Doodles */}
+      <div style={{ position: 'absolute', top: 65, left: 10 }}><Firework size={55} color="#aaa" opacity={0.2} /></div>
+      <div style={{ position: 'absolute', top: 65, right: 10 }}><Firework size={55} color="#aaa" opacity={0.2} /></div>
+      <div style={{ position: 'absolute', bottom: 100, left: 12 }}><Firework size={45} color="#ddd" opacity={0.15} /></div>
+      <div style={{ position: 'absolute', bottom: 100, right: 12 }}><Firework size={45} color="#ddd" opacity={0.15} /></div>
+      {/* Stars */}
+      {[[8, 20], [90, 18], [20, 75], [80, 72], [50, 8], [3, 50], [97, 52], [45, 85], [55, 88]].map(([x, y], i) => (
+        <div key={i} style={{ position: 'absolute', left: `${x}%`, top: `${y}%` }}><Star size={5 + i * 1.5} color="#ddd" opacity={0.15 + i * 0.04} /></div>
+      ))}
+
+      {/* Glossy border */}
+      <div style={{ position: 'absolute', inset: 14, border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4, pointerEvents: 'none', boxShadow: 'inset 0 0 30px rgba(255,255,255,0.02)' }} />
+
+      {/* Content */}
+      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 320 }}>
+        <div style={{ fontSize: 28, marginBottom: 6 }}>🥂</div>
+        <div style={{ fontSize: 10, letterSpacing: 5, color: '#888', textTransform: 'uppercase', marginBottom: 8, fontFamily: 'Georgia, serif' }}>
+          An Evening to Remember
+        </div>
+
+        <DiamondDivider color="#666" width={180} />
+
+        <div style={{ margin: '14px 0 8px' }}>
+          <div style={{ fontSize: 42, fontFamily: "'Playfair Display', serif", fontWeight: 900, lineHeight: 1, background: 'linear-gradient(135deg, #888, #fff, #aaa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            Reception
+          </div>
+        </div>
+        <div style={{ fontSize: 13, color: '#888', fontFamily: 'Georgia, serif', fontStyle: 'italic', marginBottom: 16 }}>రిసెప్షన్</div>
+
+        <FlowerBorder color="#555" width={240} />
+
+        <div style={{ margin: '18px 0' }}>
+          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '14px 16px', backdropFilter: 'blur(10px)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 9, color: '#777', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Date</div>
+                <div style={{ fontSize: 15, color: '#fff', fontFamily: 'Georgia, serif' }}>August 28, 2026</div>
+                <div style={{ fontSize: 11, color: '#888' }}>Friday</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 9, color: '#777', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Time</div>
+                <div style={{ fontSize: 15, color: '#fff', fontFamily: 'Georgia, serif' }}>7:30 PM</div>
+                <div style={{ fontSize: 11, color: '#888' }}>డిన్నర్ · Dinner</div>
+              </div>
+            </div>
+            <div style={{ marginTop: 10, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10 }}>
+              <div style={{ fontSize: 9, color: '#777', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>Venue</div>
+              <div style={{ fontSize: 14, color: '#ccc', fontFamily: 'Georgia, serif' }}>Venue TBA</div>
+            </div>
+          </div>
+        </div>
+
+        {/* RSVP mini */}
+        <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '14px' }}>
+          <div style={{ fontSize: 11, color: '#888', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 10 }}>RSVP · మీ హాజరు</div>
+          <RSVPMini />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RSVPMini() {
+  const [name, setName] = useState('');
+  const [done, setDone] = useState(false);
+  if (done) return <div style={{ fontSize: 13, color: '#888', fontFamily: 'Georgia, serif', padding: '8px 0' }}>🌺 ధన్యవాదాలు, {name}!</div>;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '9px 12px', color: '#fff', fontFamily: 'Georgia, serif', fontSize: 13, outline: 'none', width: '100%', boxSizing: 'border-box' }} />
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button onClick={() => { if (name) setDone(true); }} style={{ flex: 1, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, padding: '9px', color: '#fff', cursor: 'pointer', fontFamily: 'Georgia, serif', fontSize: 12 }}>Attending 🎉</button>
+        <button onClick={() => { if (name) setDone(true); }} style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '9px', color: '#666', cursor: 'pointer', fontFamily: 'Georgia, serif', fontSize: 12 }}>Can't Make It</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── PAGE RENDER MAP ──────────────────────────────────────────────────
+const PageContent = ({ id }) => {
+  if (id === 'cover') return <CoverPage />;
+  if (id === 'sangeet') return <SangeetPage />;
+  if (id === 'haldi') return <HaldiPage />;
+  if (id === 'wedding') return <WeddingPage />;
+  if (id === 'reception') return <ReceptionPage />;
+  return null;
+};
+
+// ─── MAIN BOOKLET ─────────────────────────────────────────────────────
+export default function WeddingBooklet() {
+  const [current, setCurrent] = useState(0);
+  const [flipping, setFlipping] = useState(false);
+  const [flipDir, setFlipDir] = useState('next'); // 'next' | 'prev'
+  const [displayPage, setDisplayPage] = useState(0);
+  const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
+
+  const goTo = (target, dir) => {
+    if (flipping || target < 0 || target >= pages.length) return;
+    setFlipDir(dir);
+    setFlipping(true);
+    setTimeout(() => {
+      setCurrent(target);
+      setDisplayPage(target);
+      setFlipping(false);
+    }, 500);
   };
 
-  // Scroll back to top → smooth fade back to envelope
+  const next = () => goTo(current + 1, 'next');
+  const prev = () => goTo(current - 1, 'prev');
+
+  // Touch/swipe handling
+  const onTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+  const onTouchEnd = (e) => {
+    if (!touchStartX.current) return;
+    const dx = touchStartX.current - e.changedTouches[0].clientX;
+    const dy = Math.abs(touchStartY.current - e.changedTouches[0].clientY);
+    if (Math.abs(dx) > 50 && Math.abs(dx) > dy) {
+      if (dx > 0) next(); else prev();
+    }
+    touchStartX.current = null;
+  };
+
+  // Keyboard
   useEffect(() => {
-    if (phase !== 'invite') return;
-    const el = mainRef.current;
-    if (!el) return;
-    let hasScrolledDown = false;
-    let timer = null;
-
-    const handleScroll = () => {
-      if (el.scrollTop > 100) hasScrolledDown = true;
-      if (hasScrolledDown && el.scrollTop <= 0) {
-        clearTimeout(timer);
-        timer = setTimeout(() => {
-          setPhase('fading');
-          setTimeout(() => {
-            setPhase('envelope');
-            setHeroVisible(false);
-          }, 400);
-        }, 50);
-      }
+    const onKey = (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next();
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prev();
     };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [current, flipping]);
 
-    // Also handle wheel going up past top
-    const handleWheel = (e) => {
-      if (el.scrollTop <= 0 && e.deltaY < 0 && hasScrolledDown) {
-        setPhase('fading');
-        setTimeout(() => {
-          setPhase('envelope');
-          setHeroVisible(false);
-        }, 400);
-      }
+  // Wheel — debounced
+  const lastWheel = useRef(0);
+  useEffect(() => {
+    const onWheel = (e) => {
+      const now = Date.now();
+      if (now - lastWheel.current < 800) return;
+      lastWheel.current = now;
+      if (e.deltaY > 30) next();
+      else if (e.deltaY < -30) prev();
     };
+    window.addEventListener('wheel', onWheel, { passive: true });
+    return () => window.removeEventListener('wheel', onWheel);
+  }, [current, flipping]);
 
-    el.addEventListener('scroll', handleScroll, { passive: true });
-    el.addEventListener('wheel', handleWheel, { passive: true });
-    return () => {
-      el.removeEventListener('scroll', handleScroll);
-      el.removeEventListener('wheel', handleWheel);
-      clearTimeout(timer);
-    };
-  }, [phase]);
-
-  const scrollTo = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-    setActiveSection(id);
-  };
+  const page = pages[current];
+  const isLight = page.id === 'cover' || page.id === 'haldi';
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(180deg, #fdf8e8 0%, #f5e4a8 25%, #faecd0 60%, #fdf8e8 100%)',
-      color: '#2a1500', fontFamily: 'Georgia, serif', overflowX: 'hidden',
-    }}>
+    <div style={{ width: '100vw', height: '100vh', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', fontFamily: 'Georgia, serif' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        ::-webkit-scrollbar { width: 3px; }
-        ::-webkit-scrollbar-thumb { background: rgba(139,105,20,0.25); }
-        @keyframes float-m { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-        @keyframes shimmer-m { 0%{background-position:-200% center} 100%{background-position:200% center} }
-        @keyframes rotate-m { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes petal-m {
-          0%{transform:translateY(-20px) rotate(0deg);opacity:0}
-          10%{opacity:0.7} 100%{transform:translateY(105vh) rotate(720deg);opacity:0}
+
+        @keyframes flip-next-out {
+          0%   { transform: perspective(1200px) rotateY(0deg);   opacity: 1; }
+          100% { transform: perspective(1200px) rotateY(-90deg); opacity: 0; }
         }
-        @keyframes invite-m { 0%{opacity:0;transform:translateY(12px)} 100%{opacity:1;transform:translateY(0)} }
-        @keyframes fade-out-invite { 0%{opacity:1} 100%{opacity:0} }
-        .shimmer-main-m {
-          background: linear-gradient(90deg, #6B4F00, #C9A630, #8B6914, #C9A630, #6B4F00);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          animation: shimmer-m 3.5s linear infinite;
+        @keyframes flip-next-in {
+          0%   { transform: perspective(1200px) rotateY(90deg);  opacity: 0; }
+          100% { transform: perspective(1200px) rotateY(0deg);   opacity: 1; }
         }
-        .petal-m { position:fixed; pointer-events:none; animation:petal-m linear infinite; z-index:0; }
-        .nav-btn-m:hover { color: #6B4F00 !important; }
+        @keyframes flip-prev-out {
+          0%   { transform: perspective(1200px) rotateY(0deg);  opacity: 1; }
+          100% { transform: perspective(1200px) rotateY(90deg); opacity: 0; }
+        }
+        @keyframes flip-prev-in {
+          0%   { transform: perspective(1200px) rotateY(-90deg); opacity: 0; }
+          100% { transform: perspective(1200px) rotateY(0deg);   opacity: 1; }
+        }
+
+        .page-flip-out-next { animation: flip-next-out 0.5s ease-in forwards; }
+        .page-flip-in-next  { animation: flip-next-in  0.5s ease-out forwards; }
+        .page-flip-out-prev { animation: flip-prev-out 0.5s ease-in forwards; }
+        .page-flip-in-prev  { animation: flip-prev-in  0.5s ease-out forwards; }
+
+        .nav-dot { transition: all 0.3s; cursor: pointer; }
+        .nav-dot:hover { transform: scale(1.3); }
+        .nav-arrow { transition: all 0.2s; cursor: pointer; border: none; background: none; }
+        .nav-arrow:hover { transform: scale(1.15); }
       `}</style>
 
-      {phase === 'envelope' && <ScrollScene onComplete={handleComplete} />}
+      {/* Booklet container */}
+      <div style={{ position: 'relative', width: '100%', maxWidth: 420, height: '100vh', maxHeight: 780 }}>
 
-      {(phase === 'invite' || phase === 'fading') && (
-        <div ref={mainRef} style={{
-          overflowY: phase === 'fading' ? 'hidden' : 'auto',
-          height: '100vh',
-          animation: phase === 'fading' ? 'fade-out-invite 0.4s ease forwards' : 'invite-m 0.9s ease forwards',
-        }}>
-
-          {/* Petals */}
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="petal-m" style={{
-              left: `${10 + i * 18}%`, top: '-30px', fontSize: 14,
-              animationDuration: `${9 + i * 2}s`, animationDelay: `${i * 2}s`,
-            }}>🌸</div>
-          ))}
-
-          {/* Nav */}
-          <nav style={{
-            position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-            background: 'rgba(253,248,232,0.93)', backdropFilter: 'blur(16px)',
-            borderBottom: '1px solid rgba(139,105,20,0.12)', padding: '0 20px',
-          }}>
-            <div style={{ maxWidth: 500, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 52 }}>
-              <div style={{ fontSize: 14, color: '#8B6914', fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif", letterSpacing: 2 }}>S & P</div>
-              <div style={{ display: 'flex', gap: 2 }}>
-                {[['home', 'Home'], ['events', 'Events'], ['rsvp', 'RSVP']].map(([id, label]) => (
-                  <button key={id} className="nav-btn-m" onClick={() => scrollTo(id)} style={{
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    color: activeSection === id ? '#6B4F00' : '#A0855A',
-                    fontSize: 12, padding: '6px 12px', letterSpacing: 1,
-                    textTransform: 'uppercase', transition: 'color 0.2s', fontFamily: 'Georgia, serif',
-                  }}>{label}</button>
-                ))}
-              </div>
-            </div>
-          </nav>
-
-          {/* Hero */}
-          <section id="home" style={{
-            minHeight: '100vh', display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
-            position: 'relative', padding: '80px 24px 40px', overflow: 'hidden',
-          }}>
-            {/* Kolam corners on main page */}
-            <div style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}><KolamCorner size={120} opacity={0.1} /></div>
-            <div style={{ position: 'absolute', top: 0, right: 0, pointerEvents: 'none' }}><KolamCorner size={120} opacity={0.1} flip /></div>
-            <div style={{ position: 'absolute', bottom: 0, left: 0, pointerEvents: 'none', transform: 'scaleY(-1)' }}><KolamCorner size={100} opacity={0.08} /></div>
-            <div style={{ position: 'absolute', bottom: 0, right: 0, pointerEvents: 'none', transform: 'scale(-1)' }}><KolamCorner size={100} opacity={0.08} /></div>
-
-            {/* Mandala bg */}
-            <div style={{
-              position: 'absolute', top: '50%', left: '50%',
-              transform: 'translate(-50%, -50%)',
-              animation: 'rotate-m 80s linear infinite', pointerEvents: 'none',
-            }}><MandalaBg /></div>
-
-            {/* Dot pattern */}
-            <div style={{
-              position: 'absolute', inset: 0, pointerEvents: 'none',
-              backgroundImage: 'radial-gradient(circle, rgba(139,105,20,0.06) 1px, transparent 1px)',
-              backgroundSize: '28px 28px',
-            }} />
-
-            <div style={{
-              position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 440,
-              opacity: heroVisible ? 1 : 0,
-              transform: heroVisible ? 'translateY(0)' : 'translateY(20px)',
-              transition: 'opacity 0.8s ease, transform 0.8s ease',
-            }}>
-              {/* Toran */}
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 4, marginBottom: 14, fontSize: 14 }}>
-                {['🌿','🍃','🌸','💐','🌸','🍃','🌿'].map((e, i) => (
-                  <span key={i} style={{ opacity: 0.7 }}>{e}</span>
-                ))}
-              </div>
-
-              <div style={{ fontSize: 11, letterSpacing: 5, color: '#A0855A', textTransform: 'uppercase', marginBottom: 8, fontFamily: 'Georgia, serif' }}>
-                Let's Celebrate
-              </div>
-              <div style={{ fontSize: 12, color: '#C9A630', fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif", marginBottom: 12 }}>
-                శుభ వివాహం
-              </div>
-
-              <h1 style={{ fontSize: 'clamp(56px, 15vw, 80px)', fontFamily: "'Playfair Display', serif", fontWeight: 900, lineHeight: 1, marginBottom: 0 }}>
-                <span className="shimmer-main-m">Srinith</span>
-              </h1>
-              <div style={{ fontSize: 14, color: '#A0855A', fontStyle: 'italic', margin: '2px 0 2px', fontFamily: "'Cormorant Garamond', serif", letterSpacing: 3 }}>
-                — weds —
-              </div>
-              <h1 style={{ fontSize: 'clamp(56px, 15vw, 80px)', fontFamily: "'Playfair Display', serif", fontWeight: 900, lineHeight: 1, marginBottom: 20 }}>
-                <span className="shimmer-main-m">Pranathi</span>
-              </h1>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center', marginBottom: 20 }}>
-                <div style={{ height: 1, width: 50, background: 'linear-gradient(to right, transparent, #C9A630)' }} />
-                <span style={{ fontSize: 16 }}>🌺</span>
-                <div style={{ height: 1, width: 50, background: 'linear-gradient(to left, transparent, #C9A630)' }} />
-              </div>
-
-              {/* Parents */}
-              <div style={{
-                background: 'rgba(255,255,255,0.65)', border: '1px solid rgba(139,105,20,0.18)',
-                borderRadius: 16, padding: '16px 20px', marginBottom: 20,
-                backdropFilter: 'blur(8px)',
-              }}>
-                <div style={{ fontSize: 10, letterSpacing: 2, color: '#A0855A', marginBottom: 10, textTransform: 'uppercase' }}>Blessed by</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 8, alignItems: 'center' }}>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 10, color: '#8B6914', marginBottom: 2 }}>Groom's Parents</div>
-                    <div style={{ fontSize: 12, color: '#2a1500', lineHeight: 1.5, fontFamily: "'Cormorant Garamond', serif" }}>[Name] &<br />Smt. Vijaya</div>
-                  </div>
-                  <div style={{ color: '#C9A630', fontSize: 14, opacity: 0.5 }}>✦</div>
-                  <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontSize: 10, color: '#8B6914', marginBottom: 2 }}>Bride's Parents</div>
-                    <div style={{ fontSize: 12, color: '#2a1500', lineHeight: 1.5, fontFamily: "'Cormorant Garamond', serif" }}>Sri. Sridhar Reddy &<br />Smt. Sunitha</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Countdown */}
-              <div style={{ marginBottom: 24 }}>
-                <div style={{ fontSize: 10, letterSpacing: 3, color: '#A0855A', textTransform: 'uppercase', marginBottom: 10 }}>Wedding Countdown</div>
-                <CountdownTimer targetDate="2026-08-26T11:20:00" />
-              </div>
-
-              <button onClick={() => scrollTo('events')} style={{
-                background: 'rgba(139,105,20,0.1)', border: '1.5px solid rgba(139,105,20,0.3)',
-                borderRadius: 50, padding: '12px 28px', color: '#6B4F00',
-                cursor: 'pointer', fontFamily: "'Playfair Display', serif",
-                fontSize: 14, letterSpacing: 1, animation: 'float-m 3s ease-in-out infinite',
-              }}>
-                View All Events ↓
-              </button>
-            </div>
-          </section>
-
-          {/* Events */}
-          <section id="events" style={{ maxWidth: 500, margin: '0 auto', padding: '50px 20px', position: 'relative' }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', opacity: 0.06 }}><KolamCorner size={80} opacity={1} /></div>
-            <div style={{ position: 'absolute', top: 0, right: 0, pointerEvents: 'none', opacity: 0.06 }}><KolamCorner size={80} opacity={1} flip /></div>
-            <div style={{ textAlign: 'center', marginBottom: 30 }}>
-              <div style={{ fontSize: 10, letterSpacing: 4, color: '#A0855A', textTransform: 'uppercase', marginBottom: 8 }}>The Celebrations</div>
-              <h2 style={{ fontSize: 30, fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>
-                <span className="shimmer-main-m">Five Sacred Events</span>
-              </h2>
-              <div style={{ fontSize: 12, color: '#A0855A', marginTop: 6, fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif" }}>
-                వేడుకలకు ఆహ్వానం — You are warmly invited
-              </div>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {events.map((event, i) => <EventCard key={event.id} event={event} index={i} />)}
-            </div>
-          </section>
-
-          {/* Quote */}
-          <section style={{ padding: '32px 24px', textAlign: 'center', background: 'rgba(255,255,255,0.4)', borderTop: '1px solid rgba(139,105,20,0.08)', borderBottom: '1px solid rgba(139,105,20,0.08)' }}>
-            <div style={{ maxWidth: 340, margin: '0 auto' }}>
-              <div style={{ fontSize: 28, color: '#C9A630', opacity: 0.35, fontFamily: 'serif' }}>"</div>
-              <p style={{ fontSize: 15, fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif", color: '#6B4F00', lineHeight: 1.8, margin: '4px 0' }}>
-                A love that builds palaces out of promises,<br />and turns every vow into a universe.
-              </p>
-              <div style={{ fontSize: 28, color: '#C9A630', opacity: 0.35, fontFamily: 'serif' }}>"</div>
-            </div>
-          </section>
-
-          {/* RSVP */}
-          <section id="rsvp" style={{ maxWidth: 500, margin: '0 auto', padding: '52px 20px 80px' }}>
-            <div style={{ textAlign: 'center', marginBottom: 26 }}>
-              <div style={{ fontSize: 10, letterSpacing: 4, color: '#A0855A', textTransform: 'uppercase', marginBottom: 8 }}>Join Us</div>
-              <h2 style={{ fontSize: 30, fontFamily: "'Playfair Display', serif", fontWeight: 700, marginBottom: 6 }}>
-                <span className="shimmer-main-m">RSVP</span>
-              </h2>
-              <p style={{ fontSize: 12, color: '#A0855A', fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif" }}>మీ హాజరు మాకు ఆశీర్వాదం</p>
-            </div>
-            <RSVPForm />
-          </section>
-
-          {/* Footer */}
-          <footer style={{ textAlign: 'center', padding: '22px', borderTop: '1px solid rgba(139,105,20,0.08)', background: 'rgba(255,255,255,0.3)', position: 'relative' }}>
-            <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'scaleY(-1)', pointerEvents: 'none' }}><KolamCorner size={60} opacity={0.06} /></div>
-            <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'scale(-1)', pointerEvents: 'none' }}><KolamCorner size={60} opacity={0.06} /></div>
-            <div style={{ fontSize: 16, marginBottom: 6 }}>🌺 💐 🌺</div>
-            <div style={{ fontSize: 11, color: '#A0855A', fontStyle: 'italic', fontFamily: "'Cormorant Garamond', serif" }}>
-              శుభం భవతు — May there be auspiciousness
-            </div>
-            <div style={{ fontSize: 9, color: '#C9A630', marginTop: 6, letterSpacing: 2 }}>
-              #SrinithWedsPranathi · AUGUST 2026
-            </div>
-          </footer>
+        {/* Page */}
+        <div
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          className={flipping
+            ? (flipDir === 'next' ? 'page-flip-out-next' : 'page-flip-out-prev')
+            : (flipDir === 'next' ? 'page-flip-in-next' : 'page-flip-in-prev')
+          }
+          style={{ width: '100%', height: '100%', borderRadius: 0, overflow: 'hidden', boxShadow: '0 20px 80px rgba(0,0,0,0.6)' }}
+        >
+          <PageContent id={pages[displayPage].id} />
         </div>
-      )}
+
+        {/* Left arrow */}
+        {current > 0 && (
+          <button className="nav-arrow" onClick={prev} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 22, color: isLight ? 'rgba(139,105,20,0.5)' : 'rgba(255,255,255,0.25)', padding: 8, zIndex: 10 }}>‹</button>
+        )}
+
+        {/* Right arrow */}
+        {current < pages.length - 1 && (
+          <button className="nav-arrow" onClick={next} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 22, color: isLight ? 'rgba(139,105,20,0.5)' : 'rgba(255,255,255,0.25)', padding: 8, zIndex: 10 }}>›</button>
+        )}
+
+        {/* Page dots */}
+        <div style={{ position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 8, zIndex: 10 }}>
+          {pages.map((p, i) => (
+            <div key={p.id} className="nav-dot" onClick={() => goTo(i, i > current ? 'next' : 'prev')} style={{
+              width: current === i ? 20 : 6, height: 6,
+              borderRadius: 3,
+              background: current === i
+                ? (isLight ? '#8B6914' : '#fff')
+                : (isLight ? 'rgba(139,105,20,0.3)' : 'rgba(255,255,255,0.2)'),
+            }} />
+          ))}
+        </div>
+
+        {/* Page number */}
+        <div style={{ position: 'absolute', top: 14, right: 20, fontSize: 10, color: isLight ? 'rgba(139,105,20,0.4)' : 'rgba(255,255,255,0.2)', letterSpacing: 2, fontFamily: 'Georgia, serif', zIndex: 10 }}>
+          {current + 1} / {pages.length}
+        </div>
+      </div>
     </div>
   );
 }
