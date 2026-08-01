@@ -276,7 +276,7 @@ function SangeetPage() {
             </div>
           </div>
         </div>
-        <div style={{ fontSize:12, color:'#BB8FCE', fontStyle:'italic', fontFamily:'Georgia,serif', opacity:0.8 }}>"Dance like nobody's watching"</div>
+        <div style={{ fontSize:12, color:'#BB8FCE', fontStyle:'italic', fontFamily:'Georgia,serif', opacity:0.8 }}>"Dance like nobody&apos;s watching"</div>
       </div>
     </div>
   );
@@ -475,7 +475,7 @@ function ReceptionPage() {
       <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '9px 12px', color: '#fff', fontFamily: 'Georgia, serif', fontSize: 13, outline: 'none', width: '100%', boxSizing: 'border-box' }} />
       <div style={{ display: 'flex', gap: 8 }}>
         <button onClick={() => { if (name) setDone(true); }} style={{ flex: 1, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, padding: '9px', color: '#fff', cursor: 'pointer', fontFamily: 'Georgia, serif', fontSize: 12 }}>Attending 🎉</button>
-        <button onClick={() => { if (name) setDone(true); }} style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '9px', color: '#666', cursor: 'pointer', fontFamily: 'Georgia, serif', fontSize: 12 }}>Can't Make It</button>
+        <button onClick={() => { if (name) setDone(true); }} style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '9px', color: '#666', cursor: 'pointer', fontFamily: 'Georgia, serif', fontSize: 12 }}>Can&apos;t Make It</button>
       </div>
     </div>
   );
@@ -640,6 +640,5 @@ export default function WeddingBooklet() {
         {current + 1} / {pages.length}
       </div>
     </div>
-    
   );
 }
