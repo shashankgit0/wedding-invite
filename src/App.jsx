@@ -640,5 +640,6 @@ export default function WeddingBooklet() {
         {current + 1} / {pages.length}
       </div>
     </div>
+    
   );
 }
